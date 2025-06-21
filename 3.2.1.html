@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>찬T의 외부 은하 퀴즈</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f0f4f8;
+        }
+        .quiz-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 1.5rem;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .question-card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #2d3748;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        .question-text .blank-emphasis {
+            font-weight: bold;
+            color: #3b82f6;
+        }
+        .option-label {
+            display: block;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+            background-color: #f7fafc;
+        }
+        .option-label:hover {
+            background-color: #e2e8f0;
+        }
+        .option-input:checked + .option-label {
+            background-color: #4299e1;
+            color: white;
+            border-color: #2b6cb0;
+        }
+        .feedback {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+        .feedback.correct {
+            background-color: #c6f6d5;
+            color: #2f855a;
+            border: 1px solid #9ae6b4;
+        }
+        .feedback.incorrect {
+            background-color: #fed7d7;
+            color: #c53030;
+            border: 1px solid #fbb6ce;
+        }
+        .explanation {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #4a5568;
+            line-height: 1.5;
+        }
+        .action-button {
+            background-color: #4a5568;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border: none;
+            margin-top: 1rem;
+            margin-right: 0.5rem;
+        }
+        .action-button:hover:not(:disabled) {
+            background-color: #2d3748;
+        }
+        .action-button:disabled {
+            background-color: #a0aec0;
+            cursor: not-allowed;
+        }
+        .pagination-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        .pagination-controls button, .pagination-controls span {
+            margin: 0 0.25rem;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            background-color: #fff;
+            cursor: pointer;
+        }
+        .pagination-controls button:disabled {
+            background-color: #e2e8f0;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .pagination-controls .page-number.current {
+            background-color: #4299e1;
+            color: white;
+            border-color: #2b6cb0;
+            font-weight: bold;
+        }
+        .score-section {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background-color: #e9f5ff;
+            border-radius: 8px;
+            text-align: left;
+        }
+        .score-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #1a202c;
+            margin-bottom: 0.5rem;
+        }
+        .quiz-title-in-score {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #1e40af;
+            margin-bottom: 0.75rem;
+        }
+        .motivational-quote {
+            font-size: 1rem;
+            font-style: italic;
+            color: #374151;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px dashed #cbd5e0;
+            text-align: center;
+        }
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a202c;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .page-info {
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: #4a5568;
+        }
+        .popup-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); display: flex;
+            justify-content: center; align-items: center; z-index: 1000;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        .popup-overlay.show { opacity: 1; visibility: visible; }
+        .popup-content {
+            background-color: white; padding: 2.5rem; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); text-align: center;
+            max-width: 420px; width: 90%;
+        }
+        .popup-content h2 {
+            font-size: 1.75rem; font-weight: 700; color: #1a202c; margin-bottom: 1rem;
+        }
+        .popup-content p.welcome-message {
+            font-size: 1rem; color: #4a5568; margin-bottom: 1.5rem; line-height: 1.6;
+        }
+        .popup-password-input {
+            width: 100%; padding: 0.75rem; margin-bottom: 1rem;
+            border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem;
+            box-sizing: border-box;
+        }
+        .popup-confirm-btn {
+            background-color: #3b82f6; color: white; padding: 0.75rem 1.5rem;
+            border-radius: 8px; font-weight: 500; cursor: pointer;
+            transition: background-color 0.2s; border: none; width: 100%;
+            font-size: 1rem;
+        }
+        .popup-confirm-btn:hover { background-color: #2563eb; }
+        .popup-error-message {
+            color: #ef4444; font-size: 0.875rem; margin-top: 0.75rem;
+            min-height: 1.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="welcome-popup" class="popup-overlay">
+        <div class="popup-content">
+            <h2>찬T의 퀴즈</h2>
+            <p class="welcome-message">비밀번호를 입력해주세요.</p>
+            <input type="password" id="popup-password" class="popup-password-input" placeholder="비밀번호">
+            <button id="popup-confirm" class="popup-confirm-btn">확인</button>
+            <p id="popup-error" class="popup-error-message"></p>
+        </div>
+    </div>
+    <div class="quiz-container">
+        <h1>찬T의 외부 은하 퀴즈</h1>
+        <div class="page-info" id="page-info"></div>
+        <div id="quiz">
+            </div>
+        <div class="pagination-controls" id="pagination-controls">
+            </div>
+        <button id="submit-page-btn" class="action-button w-full sm:w-auto mx-auto block">이번 페이지 채점하기</button>
+        <div class="score-section" id="score-section" style="display: none;">
+            <p class="score-text quiz-title-in-score" id="quiz-main-title-in-score"></p>
+            <p class="score-text" id="current-page-score-text"></p>
+            <p class="score-text" id="total-score-text"></p>
+            <p class="motivational-quote" id="motivational-quote" style="display: none;"></p>
+        </div>
+    </div>
+
+    <script>
+        // ------------------ 문제 데이터 (총 30문제) ------------------
+        const questions = [
+            {
+                id: 1,
+                type: 'fill-in',
+                text: "허블은 안드로메다은하까지의 거리를 측정하기 위해, 주기와 광도의 관계가 명확한 ( )을/를 이용했다.",
+                answer: "세페이드 변광성",
+                options: ["초신성", "성단", "세페이드 변광성", "중성자별"],
+                explanation: "세페이드 변광성은 변광 주기가 길수록 절대 광도가 크다는 주기-광도 관계가 있습니다. 허블은 이 관계를 이용하여 겉보기 등급과 비교함으로써 안드로메다은하가 우리은하 밖에 있다는 사실을 최초로 밝혀냈습니다."
+            },
+            {
+                id: 2,
+                type: 'fill-in',
+                text: "허블의 은하 분류에서 나선팔이 없고 타원 모양인 은하를 ( )라고 한다.",
+                answer: "타원 은하",
+                options: ["나선 은하", "불규칙 은하", "렌즈형 은하", "타원 은하"],
+                explanation: "타원 은하는 모양에 따라 분류된 것으로, 주로 나이가 많고 붉은 별들로 이루어져 있으며 성간 물질이 거의 없는 특징이 있습니다."
+            },
+            {
+                id: 3,
+                type: 'ox',
+                text: "타원 은하는 편평도에 따라 E0에서 E7까지 분류하며, E7이 E0보다 더 구형에 가깝다.",
+                answer: "X",
+                options: ["O", "X"],
+                explanation: "아닙니다. 숫자가 클수록 더 납작한(편평한) 타원 모양을 의미합니다. 따라서 E0이 가장 구형에 가깝고, E7이 가장 납작한 형태입니다."
+            },
+            {
+                id: 4,
+                type: 'fill-in',
+                text: "납작한 원반에 은하핵과 나선팔이 있는 은하를 ( )라고 하며, 우리은하는 여기에 속한다.",
+                answer: "나선 은하",
+                options: ["타원 은하", "나선 은하", "불규칙 은하", "렌즈형 은하"],
+                explanation: "나선 은하는 중심부의 막대 구조 유무에 따라 정상 나선 은하(S)와 막대 나선 은하(SB)로 나뉩니다. 우리은하는 막대 나선 은하에 속합니다."
+            },
+            {
+                id: 5,
+                type: 'fill-in',
+                text: "나선 은하의 ( )에는 성간 물질이 풍부하여, 주로 젊고 푸른 별들이 탄생하고 분포한다.",
+                answer: "나선팔",
+                options: ["은하 핵", "헤일로", "나선팔", "은하 중심부"],
+                explanation: "나선팔은 성간 물질이 압축되어 새로운 별들이 활발하게 만들어지는 영역이기 때문에, 온도가 높고 푸른색을 띠는 젊은 별들이 많이 분포합니다."
+            },
+            {
+                id: 6,
+                type: 'fill-in',
+                text: "나선 은하를 Sa, Sb, Sc로 세분할 때, c로 갈수록 은하핵의 크기는 ( )지고, 나선팔은 ( ) 감겨 있다.",
+                answer: "작아; 느슨하게",
+                options: ["커; 단단히", "작아; 단단히", "커; 느슨하게", "작아; 느슨하게"],
+                explanation: "분류 기호가 a에서 c로 갈수록 중심핵의 상대적인 크기가 작아지고, 나선팔은 더 느슨하게 풀어진 형태를 보입니다."
+            },
+            {
+                id: 7,
+                type: 'fill-in',
+                text: "일정한 모양이나 규칙적인 구조가 없는 은하를 ( )라고 하며, 대마젤란 은하가 대표적인 예이다.",
+                answer: "불규칙 은하",
+                options: ["타원 은하", "나선 은하", "불규칙 은하", "렌즈형 은하"],
+                explanation: "불규칙 은하는 허블의 분류 체계에서 형태적으로 특정하기 어려운 은하들을 말하며, 보통 규모가 작고 성간 물질과 젊은 별이 풍부합니다."
+            },
+            {
+                id: 8,
+                type: 'fill-in',
+                text: "허블의 분류 체계로 분류하기 어려운 특이한 성질을 가진 은하를 통틀어 무엇이라고 하는가?",
+                answer: "특이 은하",
+                options: ["왜소 은하", "거대 은하", "정상 은하", "특이 은하"],
+                explanation: "특이 은하는 일반적인 은하와 다른 특별한 현상을 보이는 은하들로, 전파 은하, 세이퍼트 은하, 퀘이사 등이 여기에 속합니다."
+            },
+            {
+                id: 9,
+                type: 'fill-in',
+                text: "일반 은하보다 수백만 배 강한 전파를 방출하며, 중심핵에서 뻗어 나온 '제트'와 '로브' 구조가 특징인 은하는?",
+                answer: "전파 은하",
+                options: ["퀘이사", "세이퍼트 은하", "전파 은하", "충돌 은하"],
+                explanation: "전파 은하는 전파 영역에서 관측했을 때 중심핵 양쪽으로 제트가 뿜어져 나와 거대한 로브를 형성하는 독특한 구조를 보입니다. 가시광선에서는 주로 타원 은하로 관측됩니다."
+            },
+            {
+                id: 10,
+                type: 'fill-in',
+                text: "매우 밝은 핵을 가지며, 스펙트럼에서 넓은 방출선이 나타나는 나선 은하는 ( )이다.",
+                answer: "세이퍼트 은하",
+                options: ["전파 은하", "불규칙 은하", "퀘이사", "세이퍼트 은하"],
+                explanation: "세이퍼트 은하는 겉보기에는 평범한 나선 은하처럼 보이지만, 중심핵이 유독 밝고 활동적인 특징을 보입니다."
+            },
+            {
+                id: 11,
+                type: 'ox',
+                text: "세이퍼트 은하의 스펙트럼에서 넓은 방출선이 관측되는 것은, 은하 중심부의 가스가 매우 빠른 속도로 움직이고 있음을 의미한다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 가스 구름이 매우 빠르게 회전하거나 움직이면 도플러 효과에 의해 방출선의 폭이 넓어집니다. 이는 중심에 거대 블랙홀이 존재한다는 강력한 증거가 됩니다."
+            },
+            {
+                id: 12,
+                type: 'fill-in',
+                text: "매우 멀리 있어 별처럼 보이지만, 실제로는 은하 전체보다 훨씬 밝은 중심핵을 가진 천체는 무엇인가?",
+                answer: "퀘이사",
+                options: ["펄서", "퀘이사", "신성", "성단"],
+                explanation: "퀘이사는 'Quasi-stellar object(준성)'의 약자로, 별처럼 보이지만 실제로는 우주 초기에 존재했던 매우 활동적인 은하의 중심핵입니다."
+            },
+            {
+                id: 13,
+                type: 'fill-in',
+                text: "퀘이사의 스펙트럼에서 ( )가 매우 크게 나타나는 것은, 퀘이사가 우리에게서 매우 빠른 속도로 멀어지고 있으며 아주 먼 거리에 있다는 것을 의미한다.",
+                answer: "적색 편이",
+                options: ["청색 편이", "적색 편이", "편광", "선폭 증가"],
+                explanation: "우주 팽창으로 인해 멀리 있는 천체일수록 더 빠르게 멀어지며, 이로 인해 더 큰 적색 편이가 관측됩니다. 퀘이사의 큰 적색 편이는 이들이 우주 초기의 천체임을 알려줍니다."
+            },
+            {
+                id: 14,
+                type: 'fill-in',
+                text: "전파 은하, 세이퍼트 은하, 퀘이사와 같은 특이 은하들의 중심에는 공통적으로 무엇이 존재할 것으로 추정되는가?",
+                answer: "거대 질량 블랙홀",
+                options: ["중성자별", "백색 왜성", "거대 성단", "거대 질량 블랙홀"],
+                explanation: "이들 특이 은하에서 방출되는 막대한 에너지는 중심에 있는 태양 질량의 수백만 배~수십억 배에 달하는 거대 질량 블랙홀로 물질이 끌려 들어가면서 발생하는 것으로 설명됩니다."
+            },
+            {
+                id: 15,
+                type: 'ox',
+                text: "두 은하가 충돌하면, 은하에 포함된 별들도 서로 충돌하여 대부분 파괴된다.",
+                answer: "X",
+                options: ["O", "X"],
+                explanation: "아닙니다. 별의 크기에 비해 별들 사이의 공간은 매우 넓기 때문에, 은하가 충돌하더라도 별들이 직접 부딪힐 확률은 거의 없습니다."
+            },
+            {
+                id: 16,
+                type: 'fill-in',
+                text: "은하가 충돌할 때, 은하 안의 거대한 성간 물질(분자 구름)들은 서로 충돌하고 압축되면서 어떤 현상이 활발하게 일어나는가?",
+                answer: "새로운 별의 탄생",
+                options: ["초신성 폭발", "블랙홀 형성", "새로운 별의 탄생", "행성의 파괴"],
+                explanation: "거대한 가스 구름들이 충돌하면 밀도가 급격히 높아져 중력 수축이 일어나기 좋은 조건이 만들어집니다. 이로 인해 짧은 시간에 수많은 별이 한꺼번에 태어나는 '폭발적 별 형성'이 일어납니다."
+            },
+            {
+                id: 17,
+                type: 'ox',
+                text: "우리 은하는 약 40억 년 후에 안드로메다은하와 충돌하여 거대한 타원 은하가 될 것으로 예측된다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 현재 우리 은하와 안드로메다은하는 서로 가까워지고 있으며, 수십억 년에 걸친 충돌과 병합 과정을 통해 두 나선 은하가 합쳐져 하나의 거대한 타원 은하가 될 것으로 예상됩니다."
+            },
+            {
+                id: 18,
+                type: 'fill-in',
+                text: "나선팔이 없이 원반 구조만 있는 은하로, 타원 은하와 나선 은하의 중간 형태로 분류되는 은하는 ( )이다.",
+                answer: "렌즈형 은하 (S0)",
+                options: ["타원 은하 (E)", "정상 나선 은하 (S)", "막대 나선 은하 (SB)", "렌즈형 은하 (S0)"],
+                explanation: "렌즈형 은하(S0)는 허블의 분류 체계에서 타원 은하와 나선 은하 사이에 위치하며, 두 은하의 특징을 일부 공유하는 중간 단계의 은하로 여겨집니다."
+            },
+            {
+                id: 19,
+                type: 'fill-in',
+                text: "은하의 종류 중, 성간 물질이 거의 없고 주로 나이가 많은 붉은색 별들로 구성된 은하는 ( )이다.",
+                answer: "타원 은하",
+                options: ["타원 은하", "정상 나선 은하", "막대 나선 은하", "불규칙 은하"],
+                explanation: "타원 은하는 과거에 별 생성을 대부분 마쳤기 때문에, 새로운 별을 만들 재료인 성간 물질이 거의 남아있지 않고 늙고 붉은 별들이 주를 이룹니다."
+            },
+            {
+                id: 20,
+                type: 'fill-in',
+                text: "은하의 종류 중, 성간 물질이 가장 풍부하고 젊은 별의 비율이 높은 은하는 ( )이다.",
+                answer: "불규칙 은하",
+                options: ["타원 은하", "렌즈형 은하", "정상 나선 은하", "불규칙 은하"],
+                explanation: "불규칙 은하는 아직도 별을 활발하게 만들고 있는 경우가 많아, 별의 재료인 성간 물질이 풍부하고 젊고 푸른 별들이 많이 관측됩니다."
+            },
+            {
+                id: 21,
+                type: 'ox',
+                text: "허블의 은하 분류 체계는 은하의 진화 순서를 나타낸다.",
+                answer: "X",
+                options: ["O", "X"],
+                explanation: "아닙니다. 허블이 처음 제안했을 때는 진화 순서로 생각했지만, 현재는 단순히 관측된 형태에 따른 분류일 뿐, 은하의 진화 경로를 나타내는 것은 아니라고 알려져 있습니다."
+            },
+            {
+                id: 22,
+                type: 'fill-in',
+                text: "퀘이사의 크기는 태양계 정도로 비교적 작지만, 방출하는 에너지는 은하 전체보다도 훨씬 많다. 이 에너지의 근원은 무엇으로 추정되는가?",
+                answer: "중심부 블랙홀로 물질이 유입될 때의 중력 에너지",
+                options: ["수많은 별들의 핵융합 에너지", "초신성 폭발 에너지", "중심부 블랙홀로 물질이 유입될 때의 중력 에너지", "암흑 물질의 소멸"],
+                explanation: "퀘이사의 막대한 에너지는 중심의 거대 블랙홀이 주변의 물질을 빨아들일 때, 그 물질이 가진 중력 위치 에너지가 마찰열과 빛에너지로 변환되면서 나오는 것으로 설명됩니다."
+            },
+            {
+                id: 23,
+                type: 'ox',
+                text: "퀘이사는 매우 멀리 있기 때문에, 퀘이사를 관측하는 것은 우주 초기의 모습을 연구하는 것과 같다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 빛의 속도는 유한하므로, 수십억 광년 떨어진 퀘이사를 보는 것은 바로 수십억 년 전의 우주의 모습을 보는 것과 같습니다. 따라서 퀘이사는 초기 은하의 진화를 연구하는 데 중요한 단서가 됩니다."
+            },
+            {
+                id: 24,
+                type: 'fill-in',
+                text: "퀘이사와 세이퍼트 은하의 공통점으로 옳은 것은?",
+                answer: "중심에 거대 질량 블랙홀이 있다.",
+                options: ["별처럼 점으로 보인다.", "대부분 타원 은하이다.", "적색 편이가 매우 크다.", "중심에 거대 질량 블랙홀이 있다."],
+                explanation: "두 특이 은하는 모두 중심의 거대 질량 블랙홀과 관련된 격렬한 활동으로 인해 막대한 에너지를 방출한다는 공통점을 가집니다."
+            },
+            {
+                id: 25,
+                type: 'fill-in',
+                text: "막대 나선 은하와 정상 나선 은하를 구분하는 기준은 무엇인가?",
+                answer: "중심부 막대 구조의 유무",
+                options: ["나선팔의 개수", "은하의 전체 크기", "중심부 막대 구조의 유무", "은하의 색깔"],
+                explanation: "허블의 분류에 따르면, 중심핵을 가로지르는 막대 모양의 구조가 있으면 막대 나선 은하(SB), 없으면 정상 나선 은하(S)로 구분합니다."
+            },
+            {
+                id: 26,
+                type: 'ox',
+                text: "타원 은하에서는 새로운 별이 거의 태어나지 않는다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 타원 은하는 별의 재료가 되는 성간 가스와 먼지가 거의 고갈되었기 때문에, 현재는 새로운 별이 거의 생성되지 않습니다."
+            },
+            {
+                id: 27,
+                type: 'fill-in',
+                text: "우리 은하와 가장 가까운 나선 은하로, 허블이 외부 은하임을 증명한 대상은 ( )이다.",
+                answer: "안드로메다은하",
+                options: ["대마젤란 은하", "소마젤란 은하", "삼각형자리 은하", "안드로메다은하"],
+                explanation: "안드로메다은하는 우리 은하와 함께 국부 은하군의 주요 구성원이며, 맨눈으로도 볼 수 있는 가장 먼 천체 중 하나입니다."
+            },
+            {
+                id: 28,
+                type: 'ox',
+                text: "은하들이 충돌하고 병합하는 과정은 은하의 질량을 증가시키고 형태를 변화시키는 주요한 진화 과정이다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 우주 초기에는 작은 은하들이 많았지만, 이들이 서로 충돌하고 합쳐지는 과정을 통해 현재와 같은 거대한 은하들이 만들어진 것으로 생각됩니다."
+            },
+            {
+                id: 29,
+                type: 'fill-in',
+                text: "특이 은하의 스펙트럼에서 관측되는 넓은 방출선은 중심부 가스의 ( )을/를 의미한다.",
+                answer: "빠른 속도",
+                options: ["높은 온도", "낮은 밀도", "많은 양", "빠른 속도"],
+                explanation: "방출원의 속도가 빠를수록 도플러 효과에 의해 관측되는 스펙트럼 선의 폭이 넓어집니다. 이는 중심부 가스가 매우 역동적으로 움직이고 있음을 보여줍니다."
+            },
+            {
+                id: 30,
+                type: 'fill-in',
+                text: "다음 중 허블의 은하 분류 체계에 해당하지 않는 은하는?",
+                answer: "퀘이사",
+                options: ["타원 은하", "나선 은하", "불규칙 은하", "퀘이사"],
+                explanation: "퀘이사는 허블의 형태에 따른 분류(타원, 나선, 불규칙)에 포함되지 않으며, 후에 그 특이성이 밝혀진 '특이 은하'의 한 종류입니다."
+            }
+        ];
+
+        // ------------------ 명언 목록 ------------------
+        const motivationalQuotes = [
+            "오늘의 노력이 내일의 너를 만든다.", "포기하지 않는 한, 실패는 없다.", "가장 큰 위험은 아무 위험도 감수하지 않는 것이다.",
+            "배움은 의무도, 생존도 아니다. 그것은 우리의 가장 큰 특권이다.", "성공은 최종 목적지가 아니며, 실패는 치명적이지 않다. 중요한 것은 계속 나아가는 용기다.",
+            "작은 성공들이 모여 큰 성공을 이룬다.", "어제보다 나은 오늘, 오늘보다 나은 내일을 만들자.",
+            "가장 큰 영광은 한 번도 실패하지 않음이 아니라 실패할 때마다 다시 일어서는 데에 있다.", "천리길도 한 걸음부터.", "노력은 결코 배신하지 않는다."
+        ];
+
+        // ------------------ DOM 요소 ------------------
+        const quizElement = document.getElementById('quiz');
+        const paginationControlsElement = document.getElementById('pagination-controls');
+        const submitPageButton = document.getElementById('submit-page-btn');
+        const scoreSectionElement = document.getElementById('score-section');
+        const currentPageScoreTextElement = document.getElementById('current-page-score-text');
+        const totalScoreTextElement = document.getElementById('total-score-text');
+        const pageInfoElement = document.getElementById('page-info');
+        const quizMainTitleDisplayElement = document.getElementById('quiz-main-title-in-score');
+        const motivationalQuoteElement = document.getElementById('motivational-quote');
+        
+        const welcomePopup = document.getElementById('welcome-popup');
+        const popupPasswordInput = document.getElementById('popup-password');
+        const popupConfirmButton = document.getElementById('popup-confirm');
+        const popupErrorMessage = document.getElementById('popup-error');
+
+        // ------------------ 퀴즈 설정 ------------------
+        const correctPassword = "chan"; // 비밀번호 설정
+        const questionsPerPage = 5; // 페이지 당 문제 수
+        let currentPage = 0;
+        let pageScores = [];
+        let pageAttempted = [];
+
+        // ------------------ 함수 ------------------
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function initializeQuizData() {
+            questions.forEach(q => {
+                q.userAnswer = null;
+                q.isCorrect = null;
+                q.attemptedThisSession = false;
+                if (q.options) {
+                   shuffleArray(q.options);
+                }
+            });
+            const numPages = Math.ceil(questions.length / questionsPerPage);
+            pageAttempted = new Array(numPages).fill(false);
+            pageScores = new Array(numPages).fill(0);
+        }
+
+        function renderQuestionsForPage(page) {
+            quizElement.innerHTML = '';
+            currentPage = page;
+
+            const start = page * questionsPerPage;
+            const end = Math.min(start + questionsPerPage, questions.length);
+            const questionsOnPage = questions.slice(start, end);
+
+            pageInfoElement.textContent = `총 ${questions.length}문제 중 ${start + 1} - ${end}번 문제`;
+
+            questionsOnPage.forEach((q, indexOnPage) => {
+                const questionCard = document.createElement('div');
+                questionCard.classList.add('question-card');
+                questionCard.id = `question-${q.id}`;
+
+                const questionText = document.createElement('p');
+                questionText.classList.add('question-text');
+                questionText.innerHTML = `${q.id}. ${q.text.replace(/(\(\s*\))/g, '<span class="blank-emphasis">( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</span>')}`;
+                questionCard.appendChild(questionText);
+
+                const optionsContainer = document.createElement('div');
+                optionsContainer.classList.add('options');
+
+                q.options.forEach((option, index) => {
+                    const optionId = `q${q.id}-option-${index}`;
+                    
+                    const radioInput = document.createElement('input');
+                    radioInput.type = 'radio';
+                    radioInput.id = optionId;
+                    radioInput.name = `question-${q.id}`;
+                    radioInput.value = option;
+                    radioInput.classList.add('option-input', 'hidden');
+                    if (q.userAnswer === option) radioInput.checked = true;
+                    if (pageAttempted[currentPage]) radioInput.disabled = true;
+
+                    const optionLabel = document.createElement('label');
+                    optionLabel.htmlFor = optionId;
+                    optionLabel.textContent = option;
+                    optionLabel.classList.add('option-label');
+                    if (pageAttempted[currentPage]) optionLabel.classList.add('opacity-70', 'cursor-not-allowed');
+
+                    optionsContainer.appendChild(radioInput);
+                    optionsContainer.appendChild(optionLabel);
+                });
+                questionCard.appendChild(optionsContainer);
+
+                const feedbackElement = document.createElement('div');
+                feedbackElement.classList.add('feedback');
+                feedbackElement.style.display = 'none';
+                questionCard.appendChild(feedbackElement);
+                
+                if (pageAttempted[currentPage] && q.attemptedThisSession) {
+                    showFeedbackForQuestion(q, questionCard);
+                }
+                quizElement.appendChild(questionCard);
+            });
+
+            const numPages = Math.ceil(questions.length / questionsPerPage);
+            if (numPages > 1) {
+                paginationControlsElement.style.display = 'flex';
+                renderPaginationControls();
+            } else {
+                paginationControlsElement.style.display = 'none';
+            }
+
+            submitPageButton.disabled = pageAttempted[currentPage];
+            if (pageAttempted[currentPage]) {
+                submitPageButton.textContent = '채점 완료';
+                scoreSectionElement.style.display = 'block';
+                updateScoreDisplay();
+                showMotivationalQuote();
+            } else {
+                submitPageButton.textContent = '이번 페이지 채점하기';
+                motivationalQuoteElement.style.display = 'none';
+                if (questionsOnPage.length > 0) {
+                    scoreSectionElement.style.display = 'none';
+                }
+            }
+        }
+        
+        function showFeedbackForQuestion(question, questionCard) {
+            const feedbackElement = questionCard.querySelector('.feedback');
+            if (!feedbackElement) return;
+
+            feedbackElement.innerHTML = '';
+            
+            if (question.isCorrect) {
+                feedbackElement.innerHTML = '<strong class="font-semibold">정답입니다!</strong> 🎉';
+                feedbackElement.className = 'feedback correct';
+            } else {
+                feedbackElement.innerHTML = `<strong class="font-semibold">오답입니다.</strong> 정답은 "<span class="font-bold text-red-700">${question.answer}</span>"입니다.`;
+                feedbackElement.className = 'feedback incorrect';
+            }
+
+            const explanationElement = document.createElement('p');
+            explanationElement.classList.add('explanation');
+            explanationElement.innerHTML = `<strong class="font-semibold">해설:</strong> ${question.explanation}`;
+            feedbackElement.appendChild(explanationElement);
+            feedbackElement.style.display = 'block';
+        }
+
+        function renderPaginationControls() {
+            paginationControlsElement.innerHTML = '';
+            const numPages = Math.ceil(questions.length / questionsPerPage);
+
+            const prevButton = document.createElement('button');
+            prevButton.textContent = '이전';
+            prevButton.disabled = currentPage === 0;
+            prevButton.onclick = () => renderQuestionsForPage(currentPage - 1);
+            paginationControlsElement.appendChild(prevButton);
+
+            for (let i = 0; i < numPages; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i + 1;
+                pageButton.classList.add('page-number');
+                if (i === currentPage) {
+                    pageButton.classList.add('current');
+                }
+                pageButton.onclick = () => renderQuestionsForPage(i);
+                paginationControlsElement.appendChild(pageButton);
+            }
+
+            const nextButton = document.createElement('button');
+            nextButton.textContent = '다음';
+            nextButton.disabled = currentPage === numPages - 1;
+            nextButton.onclick = () => renderQuestionsForPage(currentPage + 1);
+            paginationControlsElement.appendChild(nextButton);
+        }
+
+        function showMotivationalQuote() {
+            const randomIndex = Math.floor(Math.random() * motivationalQuotes.length);
+            motivationalQuoteElement.textContent = motivationalQuotes[randomIndex];
+            motivationalQuoteElement.style.display = 'block';
+        }
+
+        function updateScoreDisplay() {
+            const questionsOnThisPageCount = Math.min(questionsPerPage, questions.length - (currentPage * questionsPerPage));
+            currentPageScoreTextElement.textContent = `이번 페이지 점수: ${pageScores[currentPage]} / ${questionsOnThisPageCount}`;
+            
+            let currentTotalScore = 0;
+            let currentTotalAttemptedQuestions = 0;
+            for(let i=0; i < pageAttempted.length; i++){
+                if(pageAttempted[i]){
+                    const start = i * questionsPerPage;
+                    const end = Math.min(start + questionsPerPage, questions.length);
+                    currentTotalAttemptedQuestions += (end-start);
+                    currentTotalScore += pageScores[i];
+                }
+            }
+
+            const quizTitleElement = document.querySelector('h1');
+            quizMainTitleDisplayElement.textContent = quizTitleElement.textContent;
+
+            if (currentTotalAttemptedQuestions > 0) {
+                totalScoreTextElement.style.display = 'block';
+                totalScoreTextElement.textContent = `총 누적 점수: ${currentTotalScore} / ${currentTotalAttemptedQuestions}`;
+            } else {
+                totalScoreTextElement.style.display = 'none';
+            }
+        }
+        
+        // ------------------ 이벤트 리스너 ------------------
+
+        submitPageButton.addEventListener('click', () => {
+            if (pageAttempted[currentPage]) return;
+
+            let scoreForThisPage = 0;
+            
+            const start = currentPage * questionsPerPage;
+            const end = Math.min(start + questionsPerPage, questions.length);
+            const questionsOnPage = questions.slice(start, end);
+
+            questionsOnPage.forEach((q, indexOnPage) => {
+                const questionCard = quizElement.children[indexOnPage];
+                const selectedOptionInput = questionCard.querySelector(`input[name="question-${q.id}"]:checked`);
+                
+                q.attemptedThisSession = true;
+
+                if (selectedOptionInput) {
+                    q.userAnswer = selectedOptionInput.value;
+                    q.isCorrect = (q.userAnswer === q.answer);
+                    
+                    if (q.isCorrect) {
+                        scoreForThisPage++;
+                    }
+                    showFeedbackForQuestion(q, questionCard);
+
+                    const radioInputs = questionCard.querySelectorAll('input[type="radio"]');
+                    radioInputs.forEach(input => input.disabled = true);
+                } else {
+                    const feedbackElement = questionCard.querySelector('.feedback');
+                    feedbackElement.textContent = '답을 선택하지 않았습니다.';
+                    feedbackElement.className = 'feedback incorrect';
+                    feedbackElement.style.display = 'block';
+                    q.isCorrect = false;
+                }
+            });
+            
+            pageScores[currentPage] = scoreForThisPage;
+            pageAttempted[currentPage] = true;
+            submitPageButton.disabled = true;
+            submitPageButton.textContent = '채점 완료';
+            
+            scoreSectionElement.style.display = 'block';
+            updateScoreDisplay();
+            showMotivationalQuote();
+
+            const quizContainerElement = document.querySelector('.quiz-container');
+            if (quizContainerElement) {
+                quizContainerElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+
+        // ------------------ 팝업 및 초기화 ------------------
+        
+        window.onload = () => {
+            if (welcomePopup) {
+                const popupSessionKey = 'externalGalaxyQuizChanT'; 
+                const popupShownThisSession = sessionStorage.getItem(popupSessionKey);
+                if (!popupShownThisSession) {
+                    welcomePopup.classList.add('show');
+                } else {
+                    initializeQuizData();
+                    renderQuestionsForPage(0);
+                }
+            } else {
+                initializeQuizData();
+                renderQuestionsForPage(0);
+            }
+        };
+
+        if (popupConfirmButton) {
+            popupConfirmButton.addEventListener('click', () => {
+                if (popupPasswordInput.value === correctPassword) {
+                    if (welcomePopup) {
+                        welcomePopup.classList.remove('show');
+                    }
+                    const popupSessionKey = 'externalGalaxyQuizChanT';
+                    sessionStorage.setItem(popupSessionKey, 'true');
+                    initializeQuizData();
+                    renderQuestionsForPage(0);
+                } else {
+                    if (popupErrorMessage) {
+                        popupErrorMessage.textContent = "비밀번호가 틀렸습니다. 다시 시도해주세요.";
+                    }
+                    popupPasswordInput.value = '';
+                    popupPasswordInput.focus();
+                }
+            });
+        }
+        
+        if (popupPasswordInput) {
+            popupPasswordInput.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    popupConfirmButton.click();
+                }
+            });
+        }
+
+    </script>
+</body>
+</html>
