@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>찬T의 해수의 심층 순환 퀴즈</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f0f4f8;
+        }
+        .quiz-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 1.5rem;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .question-card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #2d3748;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        .question-text .blank-emphasis {
+            font-weight: bold;
+            color: #3b82f6;
+        }
+        .option-label {
+            display: block;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+            background-color: #f7fafc;
+        }
+        .option-label:hover {
+            background-color: #e2e8f0;
+        }
+        .option-input:checked + .option-label {
+            background-color: #4299e1;
+            color: white;
+            border-color: #2b6cb0;
+        }
+        .feedback {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+        .feedback.correct {
+            background-color: #c6f6d5;
+            color: #2f855a;
+            border: 1px solid #9ae6b4;
+        }
+        .feedback.incorrect {
+            background-color: #fed7d7;
+            color: #c53030;
+            border: 1px solid #fbb6ce;
+        }
+        .explanation {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #4a5568;
+            line-height: 1.5;
+        }
+        .action-button {
+            background-color: #4a5568;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border: none;
+            margin-top: 1rem;
+            margin-right: 0.5rem;
+        }
+        .action-button:hover:not(:disabled) {
+            background-color: #2d3748;
+        }
+        .action-button:disabled {
+            background-color: #a0aec0;
+            cursor: not-allowed;
+        }
+        .pagination-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        .pagination-controls button, .pagination-controls span {
+            margin: 0 0.25rem;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            background-color: #fff;
+            cursor: pointer;
+        }
+        .pagination-controls button:disabled {
+            background-color: #e2e8f0;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .pagination-controls .page-number.current {
+            background-color: #4299e1;
+            color: white;
+            border-color: #2b6cb0;
+            font-weight: bold;
+        }
+        .score-section {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background-color: #e9f5ff;
+            border-radius: 8px;
+            text-align: left;
+        }
+        .score-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #1a202c;
+            margin-bottom: 0.5rem;
+        }
+        .quiz-title-in-score {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #1e40af;
+            margin-bottom: 0.75rem;
+        }
+        .motivational-quote {
+            font-size: 1rem;
+            font-style: italic;
+            color: #374151;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px dashed #cbd5e0;
+            text-align: center;
+        }
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a202c;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .page-info {
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: #4a5568;
+        }
+        .popup-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); display: flex;
+            justify-content: center; align-items: center; z-index: 1000;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        .popup-overlay.show { opacity: 1; visibility: visible; }
+        .popup-content {
+            background-color: white; padding: 2.5rem; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); text-align: center;
+            max-width: 420px; width: 90%;
+        }
+        .popup-content h2 {
+            font-size: 1.75rem; font-weight: 700; color: #1a202c; margin-bottom: 1rem;
+        }
+        .popup-content p.welcome-message {
+            font-size: 1rem; color: #4a5568; margin-bottom: 1.5rem; line-height: 1.6;
+        }
+        .popup-password-input {
+            width: 100%; padding: 0.75rem; margin-bottom: 1rem;
+            border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem;
+            box-sizing: border-box;
+        }
+        .popup-confirm-btn {
+            background-color: #3b82f6; color: white; padding: 0.75rem 1.5rem;
+            border-radius: 8px; font-weight: 500; cursor: pointer;
+            transition: background-color 0.2s; border: none; width: 100%;
+            font-size: 1rem;
+        }
+        .popup-confirm-btn:hover { background-color: #2563eb; }
+        .popup-error-message {
+            color: #ef4444; font-size: 0.875rem; margin-top: 0.75rem;
+            min-height: 1.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="welcome-popup" class="popup-overlay">
+        <div class="popup-content">
+            <h2>찬T의 퀴즈</h2>
+            <p class="welcome-message">비밀번호를 입력해주세요.</p>
+            <input type="password" id="popup-password" class="popup-password-input" placeholder="비밀번호">
+            <button id="popup-confirm" class="popup-confirm-btn">확인</button>
+            <p id="popup-error" class="popup-error-message"></p>
+        </div>
+    </div>
+    <div class="quiz-container">
+        <h1>찬T의 해수의 심층 순환 퀴즈</h1>
+        <div class="page-info" id="page-info"></div>
+        <div id="quiz">
+            </div>
+        <div class="pagination-controls" id="pagination-controls">
+            </div>
+        <button id="submit-page-btn" class="action-button w-full sm:w-auto mx-auto block">이번 페이지 채점하기</button>
+        <div class="score-section" id="score-section" style="display: none;">
+            <p class="score-text quiz-title-in-score" id="quiz-main-title-in-score"></p>
+            <p class="score-text" id="current-page-score-text"></p>
+            <p class="score-text" id="total-score-text"></p>
+            <p class="motivational-quote" id="motivational-quote" style="display: none;"></p>
+        </div>
+    </div>
+
+    <script>
+        // ------------------ 문제 데이터 (총 30문제) ------------------
+        const questions = [
+            {
+                id: 1,
+                type: 'fill-in',
+                text: "해수의 심층 순환을 일으키는 주된 원인은 수온과 염분 변화에 따른 ( ) 차이이다.",
+                answer: "밀도",
+                options: ["수압", "밀도", "마찰력", "표면 장력"],
+                explanation: "심층 순환은 수온이 낮아지거나 염분이 높아져 해수의 밀도가 커진 곳에서 물이 침강하면서 시작됩니다. 그래서 '열염 순환' 또는 '밀도 순환'이라고도 부릅니다."
+            },
+            {
+                id: 2,
+                type: 'fill-in',
+                text: "심층 순환에서 해수가 무거워져 가라앉는 '침강' 현상은 주로 ( )에서 일어난다.",
+                answer: "극 해역",
+                options: ["적도 해역", "중위도 해역", "극 해역", "연안 해역"],
+                explanation: "극 해역은 표층 해수가 냉각되거나, 해수가 얼면서 염분이 높아져 밀도가 커지기 때문에 심층 순환의 침강이 주로 발생하는 지역입니다."
+            },
+            {
+                id: 3,
+                type: 'ox',
+                text: "심층 순환은 바람의 영향을 직접 받는 표층 순환보다 이동 속도가 매우 빠르다.",
+                answer: "X",
+                options: ["O", "X"],
+                explanation: "아닙니다. 심층 순환은 밀도 차이에 의해 매우 느리게 이동하며, 전 지구를 한 바퀴 도는 데 약 1000년이 걸릴 정도로 속도가 느립니다."
+            },
+            {
+                id: 4,
+                type: 'fill-in',
+                text: "심층 순환을 간접적으로 연구하기 위해, 수온과 염분이 거의 일정한 해수 덩어리인 ( )을/를 분석한다.",
+                answer: "수괴",
+                options: ["해류", "기단", "수괴", "용존 기체"],
+                explanation: "심층 순환은 직접 관측이 어려워, 고유한 수온과 염분 특성을 가지는 '수괴'를 T-S도 등으로 분석하여 그 기원과 이동 경로를 추정합니다."
+            },
+            {
+                id: 5,
+                type: 'fill-in',
+                text: "대서양의 심층수를 형성하는 주요 수괴 3가지를 밀도가 큰 순서대로 나열한 것은?",
+                answer: "남극 저층수 > 북대서양 심층수 > 남극 중층수",
+                options: [
+                    "남극 저층수 > 북대서양 심층수 > 남극 중층수",
+                    "북대서양 심층수 > 남극 중층수 > 남극 저층수",
+                    "남극 중층수 > 남극 저층수 > 북대서양 심층수",
+                    "북대서양 심층수 > 남극 저층수 > 남극 중층수"
+                ],
+                explanation: "남극 저층수가 가장 밀도가 커서 최하층에, 북대서양 심층수가 그 위에, 남극 중층수가 가장 위쪽에 흐릅니다."
+            },
+            {
+                id: 6,
+                type: 'fill-in',
+                text: "전 세계 해양에서 가장 밀도가 큰 해수인 ( )는/은 남극 대륙 주변의 웨델해에서 형성된다.",
+                answer: "남극 저층수",
+                options: ["남극 중층수", "북대서양 심층수", "지중해 중층수", "남극 저층수"],
+                explanation: "남극 저층수는 남극 대륙 주변 웨델해에서 해수가 얼 때(결빙) 방출된 막대한 양의 염분으로 인해 매우 짜고 차가워져, 전 세계에서 가장 밀도가 큰 수괴를 형성합니다."
+            },
+            {
+                id: 7,
+                type: 'fill-in',
+                text: "북대서양 심층수는 그린란드 주변 해역에서, 멕시코 만류가 운반한 고염분의 해수가 ( )되면서 형성된다.",
+                answer: "냉각",
+                options: ["가열", "증발", "결빙", "냉각"],
+                explanation: "북대서양 심층수는 저위도에서 온 따뜻하고 염분이 높은 해수가 극지방에서 냉각되어 밀도가 커져 침강하면서 형성됩니다."
+            },
+            {
+                id: 8,
+                type: 'ox',
+                text: "남극 저층수는 북대서양 심층수보다 밀도가 작아서 그 위를 따라 흐른다.",
+                answer: "X",
+                options: ["O", "X"],
+                explanation: "아닙니다. 남극 저층수는 북대서양 심층수보다 밀도가 더 크기 때문에, 그 아래쪽 해저를 따라 더 깊은 곳에서 흐릅니다."
+            },
+            {
+                id: 9,
+                type: 'fill-in',
+                text: "심층 순환과 표층 순환은 연결되어 전 지구를 순환하며, 이를 거대한 ( )에 비유한다.",
+                answer: "컨베이어 벨트",
+                options: ["열염 순환", "컨베이어 벨트", "밀도 약층", "수온 약층"],
+                explanation: "표층과 심층을 오가며 전 세계 바다를 순환하는 거대한 해수의 흐름을 '해양 컨베이어 벨트'라고 부릅니다. 이 순환은 지구의 기후 시스템에 큰 영향을 줍니다."
+            },
+            {
+                id: 10,
+                type: 'fill-in',
+                text: "태평양에는 대규모의 심층수 침강 해역이 없는 주된 이유는 표층 해수의 ( )이/가 낮기 때문이다.",
+                answer: "염분",
+                options: ["수온", "밀도", "염분", "수압"],
+                explanation: "북태평양은 기온이 낮아 해수가 냉각되지만, 다른 대양에 비해 강수량이 많고 강물 유입이 많아 표층 염분이 낮습니다. 그래서 냉각되어도 밀도가 충분히 커지지 않아 침강이 잘 일어나지 않습니다."
+            },
+            {
+                id: 11,
+                type: 'fill-in',
+                text: "심층 순환의 중요한 역할 중 하나는, 표층의 풍부한 ( )을/를 심해로 운반하여 심해 생물이 살아갈 수 있게 하는 것이다.",
+                answer: "용존 산소",
+                options: ["영양염류", "용존 산소", "이산화탄소", "열에너지"],
+                explanation: "표층의 산소가 풍부한 물이 심해로 가라앉으면서, 빛이 닿지 않아 산소 생성이 없는 심해에 산소를 공급해주는 결정적인 역할을 합니다."
+            },
+            {
+                id: 12,
+                type: 'ox',
+                text: "심층 순환은 저위도의 남는 열에너지를 고위도로 수송하여 위도별 에너지 불균형을 해소하는 데 기여한다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 표층 순환과 연결된 심층 순환은 전 지구적인 열 수송 시스템의 일부로서, 대기 대순환과 함께 지구의 에너지 균형을 맞추는 중요한 역할을 합니다."
+            },
+            {
+                id: 13,
+                type: 'fill-in',
+                text: "지구 온난화로 극지방의 빙하가 녹아 북대서양으로 많은 양의 담수가 유입되면, 심층 순환은 어떻게 될까?",
+                answer: "약해진다",
+                options: ["강해진다", "약해진다", "속도가 빨라진다", "영향을 받지 않는다"],
+                explanation: "빙하가 녹은 담수는 염분이 매우 낮아 해수의 밀도를 떨어뜨립니다. 이로 인해 해수의 침강이 약해지거나 멈추게 되어 심층 순환 전체가 약화될 수 있습니다."
+            },
+            {
+                id: 14,
+                type: 'fill-in',
+                text: "과거에 심층 순환이 약화되면서 유럽 지역의 기온이 급격히 하강했던 소빙하기를 ( )라고 부른다.",
+                answer: "영거 드라이아스기",
+                options: ["홀로세", "플라이스토세", "영거 드라이아스기", "마지막 최대 빙하기"],
+                explanation: "약 12,900년 전, 빙하가 녹은 물이 북대서양으로 유입되어 심층 순환이 약화되면서 열 수송이 줄어들어 북반구, 특히 유럽 지역이 다시 추워졌던 시기를 영거 드라이아스기라고 합니다."
+            },
+            {
+                id: 15,
+                type: 'fill-in',
+                text: "심층 순환 실험에서, 얼음물을 부었을 때 파란 잉크가 가라앉는 것은 해수의 ( )에 의한 밀도 증가를 모방한 것이다.",
+                answer: "냉각",
+                options: ["냉각", "결빙", "증발", "가열"],
+                explanation: "차가운 얼음물은 주변 물보다 밀도가 크기 때문에 가라앉습니다. 이는 극지방에서 표층 해수가 차가운 대기에 의해 냉각되어 밀도가 커지는 과정을 나타냅니다."
+            },
+            {
+                id: 16,
+                type: 'fill-in',
+                text: "심층 순환 실험에서, 소금물을 부었을 때 붉은 잉크가 가라앉는 것은 해수의 ( )에 의한 밀도 증가를 모방한 것이다.",
+                answer: "염분 증가 (결빙)",
+                options: ["수온 하강", "증발", "염분 증가 (결빙)", "용승"],
+                explanation: "소금물은 민물보다 밀도가 크기 때문에 가라앉습니다. 이는 극지방에서 바닷물이 얼 때 소금기(염분)가 빠져나와 주변 해수의 염분이 높아져 밀도가 커지는 과정을 나타냅니다."
+            },
+            {
+                id: 17,
+                type: 'ox',
+                text: "수괴의 수온과 염분은 주변 해수와 잘 섞이지 않기 때문에 이동하는 동안 그 특성이 잘 변하지 않는다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 수괴는 고유한 수온과 염분을 가진 거대한 물덩어리로, 이동하는 동안 그 특성을 거의 그대로 유지하기 때문에 심층 순환을 추적하는 데 중요한 단서가 됩니다."
+            },
+            {
+                id: 18,
+                type: 'fill-in',
+                text: "T-S도에서 북대서양 심층수(NADW)는 남극 중층수(AAIW)보다 ( )이/가 높아 더 오른쪽에 위치한다.",
+                answer: "염분",
+                options: ["수온", "밀도", "염분", "용존 산소량"],
+                explanation: "북대서양 심층수는 고염분의 멕시코 만류가 기원이므로 다른 심층수들에 비해 염분이 높은 특징을 가집니다. T-S도에서 가로축은 염분이므로, 염분이 높을수록 오른쪽에 표시됩니다."
+            },
+            {
+                id: 19,
+                type: 'fill-in',
+                text: "T-S도에서 남극 저층수(AABW)는 다른 심층수들보다 ( )이/가 가장 낮아 가장 아래쪽에 위치한다.",
+                answer: "수온",
+                options: ["수온", "염분", "수압", "밀도"],
+                explanation: "남극 저층수는 남극 대륙의 극한 환경에서 형성되어 수온이 영하로 매우 낮습니다. T-S도에서 세로축은 수온이므로, 수온이 낮을수록 아래쪽에 표시됩니다."
+            },
+            {
+                id: 20,
+                type: 'fill-in',
+                text: "심층수가 저위도 해역에서 서서히 표층으로 올라오는 현상을 무엇이라고 하는가?",
+                answer: "용승",
+                options: ["침강", "용승", "확산", "분출"],
+                explanation: "극지방에서 침강한 심층수는 오랜 시간에 걸쳐 저위도나 중위도 해역으로 이동한 후, 서서히 표층으로 솟아오르는 '용승' 과정을 통해 표층 순환과 합류합니다."
+            },
+            {
+                id: 21,
+                type: 'ox',
+                text: "심층 순환이 약화되면, 심해의 영양염류가 표층으로 올라오는 과정도 약화되어 해양 생태계에 영향을 줄 수 있다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 심층 순환에 의한 용승은 영양염류가 풍부한 심층수를 표층으로 공급하는 중요한 역할을 합니다. 이 순환이 약해지면 표층의 생산성이 감소하여 해양 생태계 전반에 영향을 미칩니다."
+            },
+            {
+                id: 22,
+                type: 'fill-in',
+                text: "전 세계 해수의 순환 모식도에서, 그린란드 주변 해역에서 침강한 해수는 주로 ( )의 심층을 따라 남하한다.",
+                answer: "대서양",
+                options: ["태평양", "인도양", "대서양", "북극해"],
+                explanation: "북대서양 심층수(NADW)는 그린란드 부근에서 침강한 후, 대서양의 서쪽 경계를 따라 깊은 곳에서 남쪽으로 이동하는 거대한 흐름을 형성합니다."
+            },
+            {
+                id: 23,
+                type: 'ox',
+                text: "심층 순환은 표층 순환과 무관하게 독립적으로 일어나는 순환이다.",
+                answer: "X",
+                options: ["O", "X"],
+                explanation: "아닙니다. 심층 순환과 표층 순환은 극지방의 침강과 저위도 해역의 용승을 통해 서로 연결되어 있으며, 하나의 거대한 컨베이어 벨트처럼 움직입니다."
+            },
+            {
+                id: 24,
+                type: 'fill-in',
+                text: "표층 해수의 밀도는 약 1.022~1.027g/cm³ 정도이고, 심층 수괴의 밀도는 이보다 ( ).",
+                answer: "크다",
+                options: ["작다", "비슷하다", "크다", "비교할 수 없다"],
+                explanation: "심층 수괴는 표층수가 냉각되거나 염분이 증가하여 밀도가 커져서 가라앉은 것이므로, 당연히 표층 해수보다 밀도가 큽니다."
+            },
+            {
+                id: 25,
+                type: 'fill-in',
+                text: "지중해에서 형성되어 대서양으로 흘러나오는 고염분의 수괴는 ( )이다.",
+                answer: "지중해 중층수",
+                options: ["북대서양 심층수", "남극 중층수", "지중해 중층수", "북극 저층수"],
+                explanation: "자료의 그림에는 지중해에서 나와 대서양의 중간 수심으로 퍼져나가는 '지중해수'가 표시되어 있습니다. 이는 증발이 활발한 지중해에서 형성된 고염분의 수괴입니다."
+            },
+            {
+                id: 26,
+                type: 'ox',
+                text: "심층 순환은 바람이 없는 심해에서 일어나므로 지구의 열수지 불균형 해소에는 기여하지 않는다.",
+                answer: "X",
+                options: ["O", "X"],
+                explanation: "아닙니다. 심층 순환은 표층 순환과 연결되어 저위도의 열을 고위도로 운반하는 역할을 하므로, 지구의 열수지 불균형 해소에 매우 중요합니다."
+            },
+            {
+                id: 27,
+                type: 'fill-in',
+                text: "남극 중층수는 위도 50°S ~ 60°S 부근에서 형성되어 북대서양 심층수 ( )를 흐른다.",
+                answer: "위",
+                options: ["아래", "옆", "위", "가로질러"],
+                explanation: "남극 중층수는 북대서양 심층수보다 밀도가 작기 때문에, 그 위쪽에서 북쪽으로 이동하는 흐름을 보입니다."
+            },
+            {
+                id: 28,
+                type: 'fill-in',
+                text: "심층 순환이 약 1000년에 걸쳐 한 번 순환한다는 사실은 무엇을 통해 알 수 있는가?",
+                answer: "방사성 동위 원소 분석",
+                options: ["인공위성 관측", "부표 추적", "염분 측정", "방사성 동위 원소 분석"],
+                explanation: "해수 속에 녹아있는 방사성 탄소(¹⁴C)와 같은 동위 원소의 붕괴 정도를 측정하여, 물이 침강한 후 얼마의 시간이 흘렀는지를 계산하여 순환 주기를 알아냅니다."
+            },
+            {
+                id: 29,
+                type: 'ox',
+                text: "심층 순환의 주된 침강 해역은 북대서양과 남극 주변 바다이다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 전 지구적인 심층 순환을 일으키는 주요 침강 해역은 그린란드 주변의 북대서양과 남극 대륙 주변의 웨델해입니다."
+            },
+            {
+                id: 30,
+                type: "fill-in",
+                text: "만약 지구 온난화가 심해져 남극 대륙의 빙하가 대량으로 녹는다면, ( )의 형성이 약화될 수 있다.",
+                answer: "남극 저층수",
+                options: ["북대서양 심층수", "남극 저층수", "남극 중층수", "쿠로시오 해류"],
+                explanation: "남극 저층수는 해수의 결빙으로 염분이 높아져 형성되는데, 빙하가 대량으로 녹아 담수가 유입되면 표층수의 염분이 낮아져 밀도가 충분히 커지지 못하므로 침강이 약해질 수 있습니다."
+            }
+        ];
+
+        // ------------------ 명언 목록 ------------------
+        const motivationalQuotes = [
+            "오늘의 노력이 내일의 너를 만든다.", "포기하지 않는 한, 실패는 없다.", "가장 큰 위험은 아무 위험도 감수하지 않는 것이다.",
+            "배움은 의무도, 생존도 아니다. 그것은 우리의 가장 큰 특권이다.", "성공은 최종 목적지가 아니며, 실패는 치명적이지 않다. 중요한 것은 계속 나아가는 용기다.",
+            "작은 성공들이 모여 큰 성공을 이룬다.", "어제보다 나은 오늘, 오늘보다 나은 내일을 만들자.",
+            "가장 큰 영광은 한 번도 실패하지 않음이 아니라 실패할 때마다 다시 일어서는 데에 있다.", "천리길도 한 걸음부터.", "노력은 결코 배신하지 않는다."
+        ];
+
+        // ------------------ DOM 요소 ------------------
+        const quizElement = document.getElementById('quiz');
+        const paginationControlsElement = document.getElementById('pagination-controls');
+        const submitPageButton = document.getElementById('submit-page-btn');
+        const scoreSectionElement = document.getElementById('score-section');
+        const currentPageScoreTextElement = document.getElementById('current-page-score-text');
+        const totalScoreTextElement = document.getElementById('total-score-text');
+        const pageInfoElement = document.getElementById('page-info');
+        const quizMainTitleDisplayElement = document.getElementById('quiz-main-title-in-score');
+        const motivationalQuoteElement = document.getElementById('motivational-quote');
+        
+        const welcomePopup = document.getElementById('welcome-popup');
+        const popupPasswordInput = document.getElementById('popup-password');
+        const popupConfirmButton = document.getElementById('popup-confirm');
+        const popupErrorMessage = document.getElementById('popup-error');
+
+        // ------------------ 퀴즈 설정 ------------------
+        const correctPassword = "chan"; // 비밀번호 설정
+        const questionsPerPage = 5; // 페이지 당 문제 수
+        let currentPage = 0;
+        let pageScores = [];
+        let pageAttempted = [];
+
+        // ------------------ 함수 ------------------
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function initializeQuizData() {
+            questions.forEach(q => {
+                q.userAnswer = null;
+                q.isCorrect = null;
+                q.attemptedThisSession = false;
+                if (q.options) {
+                   shuffleArray(q.options);
+                }
+            });
+            const numPages = Math.ceil(questions.length / questionsPerPage);
+            pageAttempted = new Array(numPages).fill(false);
+            pageScores = new Array(numPages).fill(0);
+        }
+
+        function renderQuestionsForPage(page) {
+            quizElement.innerHTML = '';
+            currentPage = page;
+
+            const start = page * questionsPerPage;
+            const end = Math.min(start + questionsPerPage, questions.length);
+            const questionsOnPage = questions.slice(start, end);
+
+            pageInfoElement.textContent = `총 ${questions.length}문제 중 ${start + 1} - ${end}번 문제`;
+
+            questionsOnPage.forEach((q, indexOnPage) => {
+                const questionCard = document.createElement('div');
+                questionCard.classList.add('question-card');
+                questionCard.id = `question-${q.id}`;
+
+                const questionText = document.createElement('p');
+                questionText.classList.add('question-text');
+                questionText.innerHTML = `${q.id}. ${q.text.replace(/(\(\s*\))/g, '<span class="blank-emphasis">( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</span>')}`;
+                questionCard.appendChild(questionText);
+
+                const optionsContainer = document.createElement('div');
+                optionsContainer.classList.add('options');
+
+                q.options.forEach((option, index) => {
+                    const optionId = `q${q.id}-option-${index}`;
+                    
+                    const radioInput = document.createElement('input');
+                    radioInput.type = 'radio';
+                    radioInput.id = optionId;
+                    radioInput.name = `question-${q.id}`;
+                    radioInput.value = option;
+                    radioInput.classList.add('option-input', 'hidden');
+                    if (q.userAnswer === option) radioInput.checked = true;
+                    if (pageAttempted[currentPage]) radioInput.disabled = true;
+
+                    const optionLabel = document.createElement('label');
+                    optionLabel.htmlFor = optionId;
+                    optionLabel.textContent = option;
+                    optionLabel.classList.add('option-label');
+                    if (pageAttempted[currentPage]) optionLabel.classList.add('opacity-70', 'cursor-not-allowed');
+
+                    optionsContainer.appendChild(radioInput);
+                    optionsContainer.appendChild(optionLabel);
+                });
+                questionCard.appendChild(optionsContainer);
+
+                const feedbackElement = document.createElement('div');
+                feedbackElement.classList.add('feedback');
+                feedbackElement.style.display = 'none';
+                questionCard.appendChild(feedbackElement);
+                
+                if (pageAttempted[currentPage] && q.attemptedThisSession) {
+                    showFeedbackForQuestion(q, questionCard);
+                }
+                quizElement.appendChild(questionCard);
+            });
+
+            const numPages = Math.ceil(questions.length / questionsPerPage);
+            if (numPages > 1) {
+                paginationControlsElement.style.display = 'flex';
+                renderPaginationControls();
+            } else {
+                paginationControlsElement.style.display = 'none';
+            }
+
+            submitPageButton.disabled = pageAttempted[currentPage];
+            if (pageAttempted[currentPage]) {
+                submitPageButton.textContent = '채점 완료';
+                scoreSectionElement.style.display = 'block';
+                updateScoreDisplay();
+                showMotivationalQuote();
+            } else {
+                submitPageButton.textContent = '이번 페이지 채점하기';
+                motivationalQuoteElement.style.display = 'none';
+                if (questionsOnPage.length > 0) {
+                    scoreSectionElement.style.display = 'none';
+                }
+            }
+        }
+        
+        function showFeedbackForQuestion(question, questionCard) {
+            const feedbackElement = questionCard.querySelector('.feedback');
+            if (!feedbackElement) return;
+
+            feedbackElement.innerHTML = '';
+            
+            if (question.isCorrect) {
+                feedbackElement.innerHTML = '<strong class="font-semibold">정답입니다!</strong> 🎉';
+                feedbackElement.className = 'feedback correct';
+            } else {
+                feedbackElement.innerHTML = `<strong class="font-semibold">오답입니다.</strong> 정답은 "<span class="font-bold text-red-700">${question.answer}</span>"입니다.`;
+                feedbackElement.className = 'feedback incorrect';
+            }
+
+            const explanationElement = document.createElement('p');
+            explanationElement.classList.add('explanation');
+            explanationElement.innerHTML = `<strong class="font-semibold">해설:</strong> ${question.explanation}`;
+            feedbackElement.appendChild(explanationElement);
+            feedbackElement.style.display = 'block';
+        }
+
+        function renderPaginationControls() {
+            paginationControlsElement.innerHTML = '';
+            const numPages = Math.ceil(questions.length / questionsPerPage);
+
+            const prevButton = document.createElement('button');
+            prevButton.textContent = '이전';
+            prevButton.disabled = currentPage === 0;
+            prevButton.onclick = () => renderQuestionsForPage(currentPage - 1);
+            paginationControlsElement.appendChild(prevButton);
+
+            for (let i = 0; i < numPages; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i + 1;
+                pageButton.classList.add('page-number');
+                if (i === currentPage) {
+                    pageButton.classList.add('current');
+                }
+                pageButton.onclick = () => renderQuestionsForPage(i);
+                paginationControlsElement.appendChild(pageButton);
+            }
+
+            const nextButton = document.createElement('button');
+            nextButton.textContent = '다음';
+            nextButton.disabled = currentPage === numPages - 1;
+            nextButton.onclick = () => renderQuestionsForPage(currentPage + 1);
+            paginationControlsElement.appendChild(nextButton);
+        }
+
+        function showMotivationalQuote() {
+            const randomIndex = Math.floor(Math.random() * motivationalQuotes.length);
+            motivationalQuoteElement.textContent = motivationalQuotes[randomIndex];
+            motivationalQuoteElement.style.display = 'block';
+        }
+
+        function updateScoreDisplay() {
+            const questionsOnThisPageCount = Math.min(questionsPerPage, questions.length - (currentPage * questionsPerPage));
+            currentPageScoreTextElement.textContent = `이번 페이지 점수: ${pageScores[currentPage]} / ${questionsOnThisPageCount}`;
+            
+            let currentTotalScore = 0;
+            let currentTotalAttemptedQuestions = 0;
+            for(let i=0; i < pageAttempted.length; i++){
+                if(pageAttempted[i]){
+                    const start = i * questionsPerPage;
+                    const end = Math.min(start + questionsPerPage, questions.length);
+                    currentTotalAttemptedQuestions += (end-start);
+                    currentTotalScore += pageScores[i];
+                }
+            }
+
+            const quizTitleElement = document.querySelector('h1');
+            quizMainTitleDisplayElement.textContent = quizTitleElement.textContent;
+
+            if (currentTotalAttemptedQuestions > 0) {
+                totalScoreTextElement.style.display = 'block';
+                totalScoreTextElement.textContent = `총 누적 점수: ${currentTotalScore} / ${currentTotalAttemptedQuestions}`;
+            } else {
+                totalScoreTextElement.style.display = 'none';
+            }
+        }
+        
+        // ------------------ 이벤트 리스너 ------------------
+
+        submitPageButton.addEventListener('click', () => {
+            if (pageAttempted[currentPage]) return;
+
+            let scoreForThisPage = 0;
+            
+            const start = currentPage * questionsPerPage;
+            const end = Math.min(start + questionsPerPage, questions.length);
+            const questionsOnPage = questions.slice(start, end);
+
+            questionsOnPage.forEach((q, indexOnPage) => {
+                const questionCard = quizElement.children[indexOnPage];
+                const selectedOptionInput = questionCard.querySelector(`input[name="question-${q.id}"]:checked`);
+                
+                q.attemptedThisSession = true;
+
+                if (selectedOptionInput) {
+                    q.userAnswer = selectedOptionInput.value;
+                    q.isCorrect = (q.userAnswer === q.answer);
+                    
+                    if (q.isCorrect) {
+                        scoreForThisPage++;
+                    }
+                    showFeedbackForQuestion(q, questionCard);
+
+                    const radioInputs = questionCard.querySelectorAll('input[type="radio"]');
+                    radioInputs.forEach(input => input.disabled = true);
+                } else {
+                    const feedbackElement = questionCard.querySelector('.feedback');
+                    feedbackElement.textContent = '답을 선택하지 않았습니다.';
+                    feedbackElement.className = 'feedback incorrect';
+                    feedbackElement.style.display = 'block';
+                    q.isCorrect = false;
+                }
+            });
+            
+            pageScores[currentPage] = scoreForThisPage;
+            pageAttempted[currentPage] = true;
+            submitPageButton.disabled = true;
+            submitPageButton.textContent = '채점 완료';
+            
+            scoreSectionElement.style.display = 'block';
+            updateScoreDisplay();
+            showMotivationalQuote();
+
+            const quizContainerElement = document.querySelector('.quiz-container');
+            if (quizContainerElement) {
+                quizContainerElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+
+        // ------------------ 팝업 및 초기화 ------------------
+        
+        window.onload = () => {
+            if (welcomePopup) {
+                const popupSessionKey = 'deepOceanQuizChanT'; 
+                const popupShownThisSession = sessionStorage.getItem(popupSessionKey);
+                if (!popupShownThisSession) {
+                    welcomePopup.classList.add('show');
+                } else {
+                    initializeQuizData();
+                    renderQuestionsForPage(0);
+                }
+            } else {
+                initializeQuizData();
+                renderQuestionsForPage(0);
+            }
+        };
+
+        if (popupConfirmButton) {
+            popupConfirmButton.addEventListener('click', () => {
+                if (popupPasswordInput.value === correctPassword) {
+                    if (welcomePopup) {
+                        welcomePopup.classList.remove('show');
+                    }
+                    const popupSessionKey = 'deepOceanQuizChanT';
+                    sessionStorage.setItem(popupSessionKey, 'true');
+                    initializeQuizData();
+                    renderQuestionsForPage(0);
+                } else {
+                    if (popupErrorMessage) {
+                        popupErrorMessage.textContent = "비밀번호가 틀렸습니다. 다시 시도해주세요.";
+                    }
+                    popupPasswordInput.value = '';
+                    popupPasswordInput.focus();
+                }
+            });
+        }
+        
+        if (popupPasswordInput) {
+            popupPasswordInput.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    popupConfirmButton.click();
+                }
+            });
+        }
+
+    </script>
+</body>
+</html>
