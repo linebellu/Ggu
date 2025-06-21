@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>찬T의 해수의 표층 순환 퀴즈</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f0f4f8;
+        }
+        .quiz-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 1.5rem;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .question-card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #2d3748;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        .question-text .blank-emphasis {
+            font-weight: bold;
+            color: #3b82f6;
+        }
+        .option-label {
+            display: block;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+            background-color: #f7fafc;
+        }
+        .option-label:hover {
+            background-color: #e2e8f0;
+        }
+        .option-input:checked + .option-label {
+            background-color: #4299e1;
+            color: white;
+            border-color: #2b6cb0;
+        }
+        .feedback {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+        .feedback.correct {
+            background-color: #c6f6d5;
+            color: #2f855a;
+            border: 1px solid #9ae6b4;
+        }
+        .feedback.incorrect {
+            background-color: #fed7d7;
+            color: #c53030;
+            border: 1px solid #fbb6ce;
+        }
+        .explanation {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #4a5568;
+            line-height: 1.5;
+        }
+        .action-button {
+            background-color: #4a5568;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border: none;
+            margin-top: 1rem;
+            margin-right: 0.5rem;
+        }
+        .action-button:hover:not(:disabled) {
+            background-color: #2d3748;
+        }
+        .action-button:disabled {
+            background-color: #a0aec0;
+            cursor: not-allowed;
+        }
+        .pagination-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        .pagination-controls button, .pagination-controls span {
+            margin: 0 0.25rem;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            background-color: #fff;
+            cursor: pointer;
+        }
+        .pagination-controls button:disabled {
+            background-color: #e2e8f0;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .pagination-controls .page-number.current {
+            background-color: #4299e1;
+            color: white;
+            border-color: #2b6cb0;
+            font-weight: bold;
+        }
+        .score-section {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background-color: #e9f5ff;
+            border-radius: 8px;
+            text-align: left;
+        }
+        .score-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #1a202c;
+            margin-bottom: 0.5rem;
+        }
+        .quiz-title-in-score {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #1e40af;
+            margin-bottom: 0.75rem;
+        }
+        .motivational-quote {
+            font-size: 1rem;
+            font-style: italic;
+            color: #374151;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px dashed #cbd5e0;
+            text-align: center;
+        }
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a202c;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .page-info {
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: #4a5568;
+        }
+        .popup-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); display: flex;
+            justify-content: center; align-items: center; z-index: 1000;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        .popup-overlay.show { opacity: 1; visibility: visible; }
+        .popup-content {
+            background-color: white; padding: 2.5rem; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); text-align: center;
+            max-width: 420px; width: 90%;
+        }
+        .popup-content h2 {
+            font-size: 1.75rem; font-weight: 700; color: #1a202c; margin-bottom: 1rem;
+        }
+        .popup-content p.welcome-message {
+            font-size: 1rem; color: #4a5568; margin-bottom: 1.5rem; line-height: 1.6;
+        }
+        .popup-password-input {
+            width: 100%; padding: 0.75rem; margin-bottom: 1rem;
+            border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem;
+            box-sizing: border-box;
+        }
+        .popup-confirm-btn {
+            background-color: #3b82f6; color: white; padding: 0.75rem 1.5rem;
+            border-radius: 8px; font-weight: 500; cursor: pointer;
+            transition: background-color 0.2s; border: none; width: 100%;
+            font-size: 1rem;
+        }
+        .popup-confirm-btn:hover { background-color: #2563eb; }
+        .popup-error-message {
+            color: #ef4444; font-size: 0.875rem; margin-top: 0.75rem;
+            min-height: 1.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="welcome-popup" class="popup-overlay">
+        <div class="popup-content">
+            <h2>찬T의 퀴즈</h2>
+            <p class="welcome-message">비밀번호를 입력해주세요.</p>
+            <input type="password" id="popup-password" class="popup-password-input" placeholder="비밀번호">
+            <button id="popup-confirm" class="popup-confirm-btn">확인</button>
+            <p id="popup-error" class="popup-error-message"></p>
+        </div>
+    </div>
+    <div class="quiz-container">
+        <h1>찬T의 해수의 표층 순환 퀴즈</h1>
+        <div class="page-info" id="page-info"></div>
+        <div id="quiz">
+            </div>
+        <div class="pagination-controls" id="pagination-controls">
+            </div>
+        <button id="submit-page-btn" class="action-button w-full sm:w-auto mx-auto block">이번 페이지 채점하기</button>
+        <div class="score-section" id="score-section" style="display: none;">
+            <p class="score-text quiz-title-in-score" id="quiz-main-title-in-score"></p>
+            <p class="score-text" id="current-page-score-text"></p>
+            <p class="score-text" id="total-score-text"></p>
+            <p class="motivational-quote" id="motivational-quote" style="display: none;"></p>
+        </div>
+    </div>
+
+    <script>
+        // ------------------ 문제 데이터 (총 30문제) ------------------
+        const questions = [
+            {
+                id: 1,
+                type: 'fill-in',
+                text: "대기 대순환과 해수 순환을 일으키는 근본적인 원인은 지구의 ( )과/와 위도에 따른 에너지 불균형이다.",
+                answer: "자전",
+                options: ["공전", "자전", "세차 운동", "조석력"],
+                explanation: "지구가 구형이라 발생하는 위도별 에너지 불균형과, 이로 인한 순환이 지구 자전의 영향을 받아 복잡한 형태의 대기 대순환과 표층 해류가 만들어집니다."
+            },
+            {
+                id: 2,
+                type: 'fill-in',
+                text: "적도 지역은 태양 복사 에너지 흡수량이 지구 복사 에너지 방출량보다 많아 에너지가 ( )되는 상태이다.",
+                answer: "과잉",
+                options: ["부족", "과잉", "평형", "소멸"],
+                explanation: "적도를 포함한 저위도 지역은 태양 에너지를 많이 흡수하여 에너지가 남고(과잉), 고위도 지역은 에너지를 많이 방출하여 에너지가 부족합니다. 이 불균형을 대기와 해수가 해소합니다."
+            },
+            {
+                id: 3,
+                type: 'fill-in',
+                text: "대기 대순환에서 적도에서 상승한 공기가 위도 30° 부근에서 하강하며 만드는 순환 세포는 ( )이다.",
+                answer: "해들리 순환",
+                options: ["극순환", "페렐 순환", "해들리 순환", "워커 순환"],
+                explanation: "해들리 순환은 열에 의해 직접적으로 구동되는 순환으로, 적도의 상승 기류와 위도 30°의 하강 기류로 구성됩니다."
+            },
+            {
+                id: 4,
+                type: 'ox',
+                text: "해들리 순환과 극순환은 열에 의한 직접 순환이지만, 페렐 순환은 주변 순환에 의해 나타나는 간접 순환이다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 페렐 순환은 해들리 순환과 극순환이라는 두 직접 순환 사이에서 기계적으로 형성되는 간접 순환의 특징을 가집니다."
+            },
+            {
+                id: 5,
+                type: 'fill-in',
+                text: "위도 30°~60° 지역의 지상에서 부는 바람으로, 우리나라에 영향을 주어 황사 등을 이동시키는 바람은 ( )이다.",
+                answer: "편서풍",
+                options: ["무역풍", "편서풍", "극동풍", "계절풍"],
+                explanation: "페렐 순환에 의해 지표면에는 서쪽에서 동쪽으로 부는 편서풍이 형성되며, 이는 중위도 지역의 날씨에 큰 영향을 미칩니다."
+            },
+            {
+                id: 6,
+                type: 'fill-in',
+                text: "적도 부근은 대기 대순환에 의해 ( ) 기류가 발달하여 강수량이 많은 ( )가 형성된다.",
+                answer: "상승; 적도 저압대",
+                options: ["상승; 적도 저압대", "하강; 아열대 고압대", "상승; 한대 전선대", "하강; 극 고압대"],
+                explanation: "적도 지역에서는 가열된 공기가 상승하여 구름이 잘 만들어지므로, 연중 강수량이 많은 저기압 지대(적도 저압대)가 형성됩니다."
+            },
+            {
+                id: 7,
+                type: 'fill-in',
+                text: "해수의 표층 순환(표층 해류)을 일으키는 주된 원인은 무엇인가?",
+                answer: "대기 대순환에 의한 바람",
+                options: ["해수의 온도 차이", "해수의 염분 차이", "달의 인력", "대기 대순환에 의한 바람"],
+                explanation: "수온 약층 위에서 일어나는 표층 순환은 지속적으로 부는 바람(무역풍, 편서풍 등)과의 마찰에 의해 주로 발생합니다."
+            },
+            {
+                id: 8,
+                type: 'fill-in',
+                text: "무역풍의 영향으로 동에서 서로 흐르는 해류는 ( )이다.",
+                answer: "적도 해류",
+                options: ["적도 반류", "남극 순환류", "적도 해류", "쿠로시오 해류"],
+                explanation: "저위도의 무역풍(북동, 남동 무역풍)은 해수면을 동쪽에서 서쪽으로 밀어 북적도 해류와 남적도 해류를 형성합니다."
+            },
+            {
+                id: 9,
+                type: 'ox',
+                text: "북태평양의 아열대 순환은 시계 방향으로 회전한다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 북반구의 아열대 순환은 북적도 해류, 쿠로시오 해류, 북태평양 해류, 캘리포니아 해류가 이어지며 시계 방향의 거대한 순환을 이룹니다."
+            },
+            {
+                id: 10,
+                type: 'fill-in',
+                text: "저위도의 따뜻한 물을 고위도로 운반하는, 대양의 서쪽 경계를 따라 흐르는 해류를 무엇이라고 하는가?",
+                answer: "서안 경계류",
+                options: ["동안 경계류", "서안 경계류", "적도 반류", "심층 순환류"],
+                explanation: "대양의 서쪽 경계를 따라 흐르는 해류(예: 쿠로시오 해류, 멕시코 만류)를 서안 경계류라고 하며, 난류로서 폭이 좁고 유속이 빠른 특징이 있습니다."
+            },
+            {
+                id: 11,
+                type: 'fill-in',
+                text: "고위도의 차가운 물을 저위도로 운반하는, 대양의 동쪽 경계를 따라 흐르는 해류는 ( )이다.",
+                answer: "동안 경계류",
+                options: ["동안 경계류", "서안 경계류", "적도 해류", "심층 순환류"],
+                explanation: "대양의 동쪽 경계를 따라 흐르는 해류(예: 캘리포니아 해류, 페루 해류)를 동안 경계류라고 하며, 한류로서 폭이 넓고 유속이 느린 특징이 있습니다."
+            },
+            {
+                id: 12,
+                type: 'fill-in',
+                text: "다음 중 한류의 특징으로 옳은 것은?",
+                answer: "용존 산소량이 많다",
+                options: ["수온이 높다", "염분이 높다", "영양염류가 적다", "용존 산소량이 많다"],
+                explanation: "한류는 차가운 물이므로 기체의 용해도가 높아 용존 산소량이 많고, 심층수가 용승하는 경우가 많아 영양염류 또한 풍부합니다."
+            },
+            {
+                id: 13,
+                type: 'fill-in',
+                text: "다음 중 난류에 해당하는 해류는 무엇인가?",
+                answer: "쿠로시오 해류",
+                options: ["캘리포니아 해류", "페루 해류", "카나리아 해류", "쿠로시오 해류"],
+                explanation: "쿠로시오 해류는 북태평양의 대표적인 난류(서안 경계류)이며, 캘리포니아, 페루, 카나리아 해류는 모두 한류(동안 경계류)입니다."
+            },
+            {
+                id: 14,
+                type: 'ox',
+                text: "해수의 표층 순환은 저위도의 남는 에너지를 고위도로 수송하여 지구의 에너지 불균형을 해소하는 역할을 한다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 대기 대순환과 마찬가지로 해수의 표층 순환, 특히 아열대 순환은 저위도의 열에너지를 고위도로 운반하여 지구 전체의 에너지 평형에 기여합니다."
+            },
+            {
+                id: 15,
+                type: 'fill-in',
+                text: "유럽 서해안이 같은 위도의 다른 지역보다 겨울철에 따뜻한 이유는 ( )의 영향을 받기 때문이다.",
+                answer: "멕시코 만류 (북대서양 해류)",
+                options: ["카나리아 해류", "래브라도 해류", "멕시코 만류 (북대서양 해류)", "캘리포니아 해류"],
+                explanation: "대표적인 난류인 멕시코 만류가 북상하여 북대서양 해류로 이어지면서 유럽 서해안에 따뜻한 열을 공급하여, 같은 위도의 다른 지역보다 온화한 기후를 만듭니다."
+            },
+            {
+                id: 16,
+                type: 'fill-in',
+                text: "우리나라 주변에 영향을 주는 난류의 근원이 되는 해류는 ( )이다.",
+                answer: "쿠로시오 해류",
+                options: ["북태평양 해류", "오야시오 해류", "쿠로시오 해류", "적도 반류"],
+                explanation: "쿠로시오 해류는 북태평양의 강력한 난류로, 이 해류의 일부가 갈라져 나와 쓰시마 난류와 황해 난류를 형성하며 우리나라에 영향을 줍니다."
+            },
+            {
+                id: 17,
+                type: 'fill-in',
+                text: "우리나라 동해에서 동한 난류와 북한 한류가 만나 형성되는 좋은 어장을 무엇이라고 하는가?",
+                answer: "조경 수역",
+                options: ["용승 어장", "대륙붕 어장", "조경 수역", "갯벌"],
+                explanation: "성질이 다른 두 해류인 난류와 한류가 만나는 경계 지역을 조경 수역이라고 합니다. 이곳에는 영양염류와 플랑크톤이 풍부하여 좋은 어장이 형성됩니다."
+            },
+            {
+                id: 18,
+                type: 'ox',
+                text: "여름철에는 난류인 동한 난류의 세력이 강해져 조경 수역이 북상한다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 계절에 따라 난류와 한류의 세기가 변하며, 난류가 강한 여름에는 조경 수역이 북쪽으로, 한류가 강한 겨울에는 남쪽으로 이동합니다."
+            },
+            {
+                id: 19,
+                type: 'fill-in',
+                text: "대륙에 가로막히지 않고 남극 대륙 주변을 흐르는 거대한 해류는 ( )이다.",
+                answer: "남극 순환 해류",
+                options: ["남적도 해류", "동오스트레일리아 해류", "남극 순환 해류", "벵겔라 해류"],
+                explanation: "남극 순환 해류는 중위도 편서풍의 영향으로 형성되며, 다른 해류와 달리 거대한 대륙에 막히지 않고 지구를 한 바퀴 순환하는 특징을 가집니다."
+            },
+            {
+                id: 20,
+                type: 'fill-in',
+                text: "북적도 해류와 남적도 해류 사이에서 반대 방향인 서에서 동으로 흐르는 해류는 무엇인가?",
+                answer: "적도 반류",
+                options: ["적도 해류", "적도 잠류", "적도 반류", "남극 순환류"],
+                explanation: "무역풍에 의해 서쪽으로 밀려간 해수가 해수면의 경사를 만들고, 이 경사를 따라 중력에 의해 다시 동쪽으로 흐르는 해류가 바로 적도 반류입니다."
+            },
+            {
+                id: 21,
+                type: 'fill-in',
+                text: "한류는 난류에 비해 수온과 염분이 낮지만, 식물성 플랑크톤의 먹이가 되는 ( )이/가 풍부하다.",
+                answer: "영양염류",
+                options: ["용존 산소", "이산화탄소", "퇴적물", "영양염류"],
+                explanation: "한류는 주로 심층에서 용승한 찬물로 이루어져, 생물의 사체가 분해되어 쌓인 질소, 인, 규소 등의 영양염류가 풍부하여 생산성이 높은 어장이 형성됩니다."
+            },
+            {
+                id: 22,
+                type: 'ox',
+                text: "대양의 서안을 흐르는 쿠로시오 해류는 동안을 흐르는 캘리포니아 해류보다 폭이 넓고 유속이 느리다.",
+                answer: "X",
+                options: ["O", "X"],
+                explanation: "아니다. 서안 경계류(쿠로시오 해류 등)는 동안 경계류(캘리포니아 해류 등)보다 폭이 좁고 유속이 빠르며 수송하는 유량도 훨씬 많습니다."
+            },
+            {
+                id: 23,
+                type: 'fill-in',
+                text: "지구가 자전하지 않는다고 가정할 때, 북반구 지상에는 ( )풍만 불게 된다.",
+                answer: "북풍",
+                options: ["북풍", "남풍", "동풍", "서풍"],
+                explanation: "지구가 자전하지 않으면 전향력이 없으므로, 공기는 기압이 높은 극지방에서 기압이 낮은 적도 지방으로 직선으로 이동하여 북반구에서는 북풍만 불게 됩니다."
+            },
+            {
+                id: 24,
+                type: 'fill-in',
+                text: "위도 38° 부근은 태양 복사 에너지 흡수량과 지구 복사 에너지 방출량이 같아 ( )을/를 이루는 지역이다.",
+                answer: "복사 평형",
+                options: ["에너지 과잉", "에너지 부족", "복사 평형", "열대 수렴"],
+                explanation: "위도 약 38°는 연간 받는 에너지와 내보내는 에너지가 같아 복사 평형을 이루며, 이 위도를 경계로 저위도는 에너지 과잉, 고위도는 에너지 부족 상태가 됩니다."
+            },
+            {
+                id: 25,
+                type: 'ox',
+                text: "저위도의 남는 에너지는 대기와 해수를 통해 고위도로 수송되며, 이 에너지 수송량은 위도 38° 부근에서 최대가 된다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 저위도와 고위도의 에너지 불균형이 가장 심한 지역 사이의 중간 지점인 위도 38° 부근에서 단위 시간당 통과하는 에너지의 양이 가장 많습니다."
+            },
+            {
+                id: 26,
+                type: 'fill-in',
+                text: "북반구 아열대 순환을 구성하는 해류가 아닌 것은?",
+                answer: "적도 반류",
+                options: ["북적도 해류", "쿠로시오 해류", "북태평양 해류", "적도 반류"],
+                explanation: "북반구 아열대 순환은 북적도 해류 → 쿠로시오 해류 → 북태평양 해류 → 캘리포니아 해류가 이어지는 시계 방향의 순환입니다. 적도 반류는 열대 순환의 일부입니다."
+            },
+            {
+                id: 27,
+                type: 'fill-in',
+                text: "위도 60° 부근에 형성되는 한대 전선대에서는 공기가 ( )하여 ( )압대가 형성된다.",
+                answer: "상승; 저",
+                options: ["상승; 저", "하강; 고", "상승; 고", "하강; 저"],
+                explanation: "위도 60° 부근에서는 페렐 순환과 극순환의 공기가 만나 상승하므로, 구름이 잘 생성되고 강수량이 많은 저압대(한대 전선대)가 형성됩니다."
+            },
+            {
+                id: 28,
+                type: 'ox',
+                text: "남반구의 아열대 순환은 시계 반대 방향으로 회전한다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 지구 자전에 의한 전향력의 영향으로, 남반구의 아열대 순환은 북반구와 반대인 시계 반대 방향으로 회전합니다."
+            },
+            {
+                id: 29,
+                type: 'fill-in',
+                text: "우리나라 서해안을 따라 흐르는 서한 연안류는 계절에 따라 흐름의 성격이 바뀌는데, 겨울에는 ( )의 성격을 띤다.",
+                answer: "한류",
+                options: ["난류", "한류", "용승", "침강"],
+                explanation: "서한 연안류는 여름철에는 남쪽으로 흐르는 난류의 성격이, 겨울철에는 중국 연안을 따라 남하하는 한류의 성격이 우세하게 나타납니다."
+            },
+            {
+                id: 30,
+                type: 'fill-in',
+                text: "표층 순환의 규모 중, 북반구에서만 뚜렷하게 나타나며 편서풍과 극동풍의 영향을 받는 순환은 ( )이다.",
+                answer: "아한대 순환",
+                options: ["열대 순환", "아열대 순환", "아한대 순환", "남극 순환"],
+                explanation: "아한대 순환은 위도 60° 이상의 고위도에서 나타나는 순환입니다. 남반구에는 이 위도대에 큰 대륙이 없어 뚜렷한 순환이 형성되지 않고, 북반구에서만 나타납니다."
+            }
+        ];
+
+        // ------------------ 명언 목록 ------------------
+        const motivationalQuotes = [
+            "오늘의 노력이 내일의 너를 만든다.", "포기하지 않는 한, 실패는 없다.", "가장 큰 위험은 아무 위험도 감수하지 않는 것이다.",
+            "배움은 의무도, 생존도 아니다. 그것은 우리의 가장 큰 특권이다.", "성공은 최종 목적지가 아니며, 실패는 치명적이지 않다. 중요한 것은 계속 나아가는 용기다.",
+            "작은 성공들이 모여 큰 성공을 이룬다.", "어제보다 나은 오늘, 오늘보다 나은 내일을 만들자.",
+            "가장 큰 영광은 한 번도 실패하지 않음이 아니라 실패할 때마다 다시 일어서는 데에 있다.", "천리길도 한 걸음부터.", "노력은 결코 배신하지 않는다."
+        ];
+
+        // ------------------ DOM 요소 ------------------
+        const quizElement = document.getElementById('quiz');
+        const paginationControlsElement = document.getElementById('pagination-controls');
+        const submitPageButton = document.getElementById('submit-page-btn');
+        const scoreSectionElement = document.getElementById('score-section');
+        const currentPageScoreTextElement = document.getElementById('current-page-score-text');
+        const totalScoreTextElement = document.getElementById('total-score-text');
+        const pageInfoElement = document.getElementById('page-info');
+        const quizMainTitleDisplayElement = document.getElementById('quiz-main-title-in-score');
+        const motivationalQuoteElement = document.getElementById('motivational-quote');
+        
+        const welcomePopup = document.getElementById('welcome-popup');
+        const popupPasswordInput = document.getElementById('popup-password');
+        const popupConfirmButton = document.getElementById('popup-confirm');
+        const popupErrorMessage = document.getElementById('popup-error');
+
+        // ------------------ 퀴즈 설정 ------------------
+        const correctPassword = "chan"; // 비밀번호 설정
+        const questionsPerPage = 5; // 페이지 당 문제 수
+        let currentPage = 0;
+        let pageScores = [];
+        let pageAttempted = [];
+
+        // ------------------ 함수 ------------------
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function initializeQuizData() {
+            questions.forEach(q => {
+                q.userAnswer = null;
+                q.isCorrect = null;
+                q.attemptedThisSession = false;
+                if (q.options) {
+                   shuffleArray(q.options);
+                }
+            });
+            const numPages = Math.ceil(questions.length / questionsPerPage);
+            pageAttempted = new Array(numPages).fill(false);
+            pageScores = new Array(numPages).fill(0);
+        }
+
+        function renderQuestionsForPage(page) {
+            quizElement.innerHTML = '';
+            currentPage = page;
+
+            const start = page * questionsPerPage;
+            const end = Math.min(start + questionsPerPage, questions.length);
+            const questionsOnPage = questions.slice(start, end);
+
+            pageInfoElement.textContent = `총 ${questions.length}문제 중 ${start + 1} - ${end}번 문제`;
+
+            questionsOnPage.forEach((q, indexOnPage) => {
+                const questionCard = document.createElement('div');
+                questionCard.classList.add('question-card');
+                questionCard.id = `question-${q.id}`;
+
+                const questionText = document.createElement('p');
+                questionText.classList.add('question-text');
+                questionText.innerHTML = `${q.id}. ${q.text.replace(/(\(\s*\))/g, '<span class="blank-emphasis">( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</span>')}`;
+                questionCard.appendChild(questionText);
+
+                const optionsContainer = document.createElement('div');
+                optionsContainer.classList.add('options');
+
+                q.options.forEach((option, index) => {
+                    const optionId = `q${q.id}-option-${index}`;
+                    
+                    const radioInput = document.createElement('input');
+                    radioInput.type = 'radio';
+                    radioInput.id = optionId;
+                    radioInput.name = `question-${q.id}`;
+                    radioInput.value = option;
+                    radioInput.classList.add('option-input', 'hidden');
+                    if (q.userAnswer === option) radioInput.checked = true;
+                    if (pageAttempted[currentPage]) radioInput.disabled = true;
+
+                    const optionLabel = document.createElement('label');
+                    optionLabel.htmlFor = optionId;
+                    optionLabel.textContent = option;
+                    optionLabel.classList.add('option-label');
+                    if (pageAttempted[currentPage]) optionLabel.classList.add('opacity-70', 'cursor-not-allowed');
+
+                    optionsContainer.appendChild(radioInput);
+                    optionsContainer.appendChild(optionLabel);
+                });
+                questionCard.appendChild(optionsContainer);
+
+                const feedbackElement = document.createElement('div');
+                feedbackElement.classList.add('feedback');
+                feedbackElement.style.display = 'none';
+                questionCard.appendChild(feedbackElement);
+                
+                if (pageAttempted[currentPage] && q.attemptedThisSession) {
+                    showFeedbackForQuestion(q, questionCard);
+                }
+                quizElement.appendChild(questionCard);
+            });
+
+            const numPages = Math.ceil(questions.length / questionsPerPage);
+            if (numPages > 1) {
+                paginationControlsElement.style.display = 'flex';
+                renderPaginationControls();
+            } else {
+                paginationControlsElement.style.display = 'none';
+            }
+
+            submitPageButton.disabled = pageAttempted[currentPage];
+            if (pageAttempted[currentPage]) {
+                submitPageButton.textContent = '채점 완료';
+                scoreSectionElement.style.display = 'block';
+                updateScoreDisplay();
+                showMotivationalQuote();
+            } else {
+                submitPageButton.textContent = '이번 페이지 채점하기';
+                motivationalQuoteElement.style.display = 'none';
+                if (questionsOnPage.length > 0) {
+                    scoreSectionElement.style.display = 'none';
+                }
+            }
+        }
+        
+        function showFeedbackForQuestion(question, questionCard) {
+            const feedbackElement = questionCard.querySelector('.feedback');
+            if (!feedbackElement) return;
+
+            feedbackElement.innerHTML = '';
+            
+            if (question.isCorrect) {
+                feedbackElement.innerHTML = '<strong class="font-semibold">정답입니다!</strong> 🎉';
+                feedbackElement.className = 'feedback correct';
+            } else {
+                feedbackElement.innerHTML = `<strong class="font-semibold">오답입니다.</strong> 정답은 "<span class="font-bold text-red-700">${question.answer}</span>"입니다.`;
+                feedbackElement.className = 'feedback incorrect';
+            }
+
+            const explanationElement = document.createElement('p');
+            explanationElement.classList.add('explanation');
+            explanationElement.innerHTML = `<strong class="font-semibold">해설:</strong> ${question.explanation}`;
+            feedbackElement.appendChild(explanationElement);
+            feedbackElement.style.display = 'block';
+        }
+
+        function renderPaginationControls() {
+            paginationControlsElement.innerHTML = '';
+            const numPages = Math.ceil(questions.length / questionsPerPage);
+
+            const prevButton = document.createElement('button');
+            prevButton.textContent = '이전';
+            prevButton.disabled = currentPage === 0;
+            prevButton.onclick = () => renderQuestionsForPage(currentPage - 1);
+            paginationControlsElement.appendChild(prevButton);
+
+            for (let i = 0; i < numPages; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i + 1;
+                pageButton.classList.add('page-number');
+                if (i === currentPage) {
+                    pageButton.classList.add('current');
+                }
+                pageButton.onclick = () => renderQuestionsForPage(i);
+                paginationControlsElement.appendChild(pageButton);
+            }
+
+            const nextButton = document.createElement('button');
+            nextButton.textContent = '다음';
+            nextButton.disabled = currentPage === numPages - 1;
+            nextButton.onclick = () => renderQuestionsForPage(currentPage + 1);
+            paginationControlsElement.appendChild(nextButton);
+        }
+
+        function showMotivationalQuote() {
+            const randomIndex = Math.floor(Math.random() * motivationalQuotes.length);
+            motivationalQuoteElement.textContent = motivationalQuotes[randomIndex];
+            motivationalQuoteElement.style.display = 'block';
+        }
+
+        function updateScoreDisplay() {
+            const questionsOnThisPageCount = Math.min(questionsPerPage, questions.length - (currentPage * questionsPerPage));
+            currentPageScoreTextElement.textContent = `이번 페이지 점수: ${pageScores[currentPage]} / ${questionsOnThisPageCount}`;
+            
+            let currentTotalScore = 0;
+            let currentTotalAttemptedQuestions = 0;
+            for(let i=0; i < pageAttempted.length; i++){
+                if(pageAttempted[i]){
+                    const start = i * questionsPerPage;
+                    const end = Math.min(start + questionsPerPage, questions.length);
+                    currentTotalAttemptedQuestions += (end-start);
+                    currentTotalScore += pageScores[i];
+                }
+            }
+
+            const quizTitleElement = document.querySelector('h1');
+            quizMainTitleDisplayElement.textContent = quizTitleElement.textContent;
+
+            if (currentTotalAttemptedQuestions > 0) {
+                totalScoreTextElement.style.display = 'block';
+                totalScoreTextElement.textContent = `총 누적 점수: ${currentTotalScore} / ${currentTotalAttemptedQuestions}`;
+            } else {
+                totalScoreTextElement.style.display = 'none';
+            }
+        }
+        
+        // ------------------ 이벤트 리스너 ------------------
+
+        submitPageButton.addEventListener('click', () => {
+            if (pageAttempted[currentPage]) return;
+
+            let scoreForThisPage = 0;
+            
+            const start = currentPage * questionsPerPage;
+            const end = Math.min(start + questionsPerPage, questions.length);
+            const questionsOnPage = questions.slice(start, end);
+
+            questionsOnPage.forEach((q, indexOnPage) => {
+                const questionCard = quizElement.children[indexOnPage];
+                const selectedOptionInput = questionCard.querySelector(`input[name="question-${q.id}"]:checked`);
+                
+                q.attemptedThisSession = true;
+
+                if (selectedOptionInput) {
+                    q.userAnswer = selectedOptionInput.value;
+                    q.isCorrect = (q.userAnswer === q.answer);
+                    
+                    if (q.isCorrect) {
+                        scoreForThisPage++;
+                    }
+                    showFeedbackForQuestion(q, questionCard);
+
+                    const radioInputs = questionCard.querySelectorAll('input[type="radio"]');
+                    radioInputs.forEach(input => input.disabled = true);
+                } else {
+                    const feedbackElement = questionCard.querySelector('.feedback');
+                    feedbackElement.textContent = '답을 선택하지 않았습니다.';
+                    feedbackElement.className = 'feedback incorrect';
+                    feedbackElement.style.display = 'block';
+                    q.isCorrect = false;
+                }
+            });
+            
+            pageScores[currentPage] = scoreForThisPage;
+            pageAttempted[currentPage] = true;
+            submitPageButton.disabled = true;
+            submitPageButton.textContent = '채점 완료';
+            
+            scoreSectionElement.style.display = 'block';
+            updateScoreDisplay();
+            showMotivationalQuote();
+
+            const quizContainerElement = document.querySelector('.quiz-container');
+            if (quizContainerElement) {
+                quizContainerElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+
+        // ------------------ 팝업 및 초기화 ------------------
+        
+        window.onload = () => {
+            if (welcomePopup) {
+                const popupSessionKey = 'surfaceCirculationQuizChanT'; 
+                const popupShownThisSession = sessionStorage.getItem(popupSessionKey);
+                if (!popupShownThisSession) {
+                    welcomePopup.classList.add('show');
+                } else {
+                    initializeQuizData();
+                    renderQuestionsForPage(0);
+                }
+            } else {
+                initializeQuizData();
+                renderQuestionsForPage(0);
+            }
+        };
+
+        if (popupConfirmButton) {
+            popupConfirmButton.addEventListener('click', () => {
+                if (popupPasswordInput.value === correctPassword) {
+                    if (welcomePopup) {
+                        welcomePopup.classList.remove('show');
+                    }
+                    const popupSessionKey = 'surfaceCirculationQuizChanT';
+                    sessionStorage.setItem(popupSessionKey, 'true');
+                    initializeQuizData();
+                    renderQuestionsForPage(0);
+                } else {
+                    if (popupErrorMessage) {
+                        popupErrorMessage.textContent = "비밀번호가 틀렸습니다. 다시 시도해주세요.";
+                    }
+                    popupPasswordInput.value = '';
+                    popupPasswordInput.focus();
+                }
+            });
+        }
+        
+        if (popupPasswordInput) {
+            popupPasswordInput.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    popupConfirmButton.click();
+                }
+            });
+        }
+
+    </script>
+</body>
+</html>
