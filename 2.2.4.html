@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>찬T의 지구 기후 변화 퀴즈</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f0f4f8;
+        }
+        .quiz-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 1.5rem;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .question-card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #2d3748;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        .question-text .blank-emphasis {
+            font-weight: bold;
+            color: #3b82f6;
+        }
+        .option-label {
+            display: block;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+            background-color: #f7fafc;
+        }
+        .option-label:hover {
+            background-color: #e2e8f0;
+        }
+        .option-input:checked + .option-label {
+            background-color: #4299e1;
+            color: white;
+            border-color: #2b6cb0;
+        }
+        .feedback {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+        .feedback.correct {
+            background-color: #c6f6d5;
+            color: #2f855a;
+            border: 1px solid #9ae6b4;
+        }
+        .feedback.incorrect {
+            background-color: #fed7d7;
+            color: #c53030;
+            border: 1px solid #fbb6ce;
+        }
+        .explanation {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #4a5568;
+            line-height: 1.5;
+        }
+        .action-button {
+            background-color: #4a5568;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border: none;
+            margin-top: 1rem;
+            margin-right: 0.5rem;
+        }
+        .action-button:hover:not(:disabled) {
+            background-color: #2d3748;
+        }
+        .action-button:disabled {
+            background-color: #a0aec0;
+            cursor: not-allowed;
+        }
+        .pagination-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        .pagination-controls button, .pagination-controls span {
+            margin: 0 0.25rem;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            background-color: #fff;
+            cursor: pointer;
+        }
+        .pagination-controls button:disabled {
+            background-color: #e2e8f0;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .pagination-controls .page-number.current {
+            background-color: #4299e1;
+            color: white;
+            border-color: #2b6cb0;
+            font-weight: bold;
+        }
+        .score-section {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background-color: #e9f5ff;
+            border-radius: 8px;
+            text-align: left;
+        }
+        .score-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #1a202c;
+            margin-bottom: 0.5rem;
+        }
+        .quiz-title-in-score {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #1e40af;
+            margin-bottom: 0.75rem;
+        }
+        .motivational-quote {
+            font-size: 1rem;
+            font-style: italic;
+            color: #374151;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px dashed #cbd5e0;
+            text-align: center;
+        }
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a202c;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .page-info {
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: #4a5568;
+        }
+        .popup-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); display: flex;
+            justify-content: center; align-items: center; z-index: 1000;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        .popup-overlay.show { opacity: 1; visibility: visible; }
+        .popup-content {
+            background-color: white; padding: 2.5rem; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); text-align: center;
+            max-width: 420px; width: 90%;
+        }
+        .popup-content h2 {
+            font-size: 1.75rem; font-weight: 700; color: #1a202c; margin-bottom: 1rem;
+        }
+        .popup-content p.welcome-message {
+            font-size: 1rem; color: #4a5568; margin-bottom: 1.5rem; line-height: 1.6;
+        }
+        .popup-password-input {
+            width: 100%; padding: 0.75rem; margin-bottom: 1rem;
+            border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem;
+            box-sizing: border-box;
+        }
+        .popup-confirm-btn {
+            background-color: #3b82f6; color: white; padding: 0.75rem 1.5rem;
+            border-radius: 8px; font-weight: 500; cursor: pointer;
+            transition: background-color 0.2s; border: none; width: 100%;
+            font-size: 1rem;
+        }
+        .popup-confirm-btn:hover { background-color: #2563eb; }
+        .popup-error-message {
+            color: #ef4444; font-size: 0.875rem; margin-top: 0.75rem;
+            min-height: 1.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="welcome-popup" class="popup-overlay">
+        <div class="popup-content">
+            <h2>찬T의 퀴즈</h2>
+            <p class="welcome-message">비밀번호를 입력해주세요.</p>
+            <input type="password" id="popup-password" class="popup-password-input" placeholder="비밀번호">
+            <button id="popup-confirm" class="popup-confirm-btn">확인</button>
+            <p id="popup-error" class="popup-error-message"></p>
+        </div>
+    </div>
+    <div class="quiz-container">
+        <h1>찬T의 지구 기후 변화 퀴즈</h1>
+        <div class="page-info" id="page-info"></div>
+        <div id="quiz">
+            </div>
+        <div class="pagination-controls" id="pagination-controls">
+            </div>
+        <button id="submit-page-btn" class="action-button w-full sm:w-auto mx-auto block">이번 페이지 채점하기</button>
+        <div class="score-section" id="score-section" style="display: none;">
+            <p class="score-text quiz-title-in-score" id="quiz-main-title-in-score"></p>
+            <p class="score-text" id="current-page-score-text"></p>
+            <p class="score-text" id="total-score-text"></p>
+            <p class="motivational-quote" id="motivational-quote" style="display: none;"></p>
+        </div>
+    </div>
+
+    <script>
+        // ------------------ 문제 데이터 (총 30문제) ------------------
+        const questions = [
+            {
+                id: 1,
+                type: 'fill-in',
+                text: "과거의 기후(고기후)를 연구할 때, 빙하 코어에 갇힌 공기 방울을 분석하여 과거 대기의 ( ) 농도를 직접적으로 알 수 있다.",
+                answer: "이산화탄소, 메테인 등",
+                options: ["온도", "습도", "이산화탄소, 메테인 등", "풍속"],
+                explanation: "빙하 코어 속 공기 방울은 과거의 대기가 그대로 보존된 타임캡슐과 같습니다. 이를 분석하면 과거 대기 중 이산화탄소나 메테인과 같은 온실 기체의 농도를 직접 알아낼 수 있습니다."
+            },
+            {
+                id: 2,
+                type: 'fill-in',
+                text: "빙하를 이루는 산소 동위 원소비($^{18}$O/$^{16}$O)는 과거의 ( )를 추정하는 데 사용된다.",
+                answer: "기온",
+                options: ["강수량", "기온", "해수면 높이", "대기압"],
+                explanation: "따뜻한 시기에는 무거운 ¹⁸O가 증발하기 쉬워 빙하에 많이 포함되므로, 산소 동위 원소비가 높으면 기온이 높았음을 의미합니다."
+            },
+            {
+                id: 3,
+                type: 'fill-in',
+                text: "지구 자전축의 경사 방향이 약 26,000년 주기로 변하는 현상을 ( )이라고 한다.",
+                answer: "세차 운동",
+                options: ["자전축 경사각 변화", "이심률 변화", "세차 운동", "밀란코비치 주기"],
+                explanation: "세차 운동은 팽이처럼 비스듬히 도는 지구의 자전축이 그 방향 자체가 회전하는 현상으로, 계절이 발생하는 시점(근일점/원일점)을 변화시켜 기후에 영향을 줍니다."
+            },
+            {
+                id: 4,
+                type: 'ox',
+                text: "현재 북반구는 원일점에서 여름을 맞이하므로, 13,000년 후에는 근일점에서 여름을 맞이하게 될 것이다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 세차 운동으로 인해 약 13,000년 후에는 계절이 반대가 되어, 북반구는 태양과 가장 가까운 근일점에서 여름을, 가장 먼 원일점에서 겨울을 맞이하게 됩니다."
+            },
+            {
+                id: 5,
+                type: 'fill-in',
+                text: "13,000년 후 북반구의 기온의 연교차는 현재보다 어떻게 될 것인가?",
+                answer: "커진다",
+                options: ["커진다", "작아진다", "변함없다", "예측할 수 없다"],
+                explanation: "13,000년 후 북반구는 근일점(태양과 가까움)에서 여름이 되어 더 더워지고, 원일점(태양과 멂)에서 겨울이 되어 더 추워지므로 기온의 연교차가 현재보다 커집니다."
+            },
+            {
+                id: 6,
+                type: 'fill-in',
+                text: "지구 자전축의 경사각이 현재(23.5°)보다 작아지면, 북반구 기온의 연교차는 어떻게 변하는가?",
+                answer: "작아진다",
+                options: ["커진다", "작아진다", "변함없다", "0이 된다"],
+                explanation: "자전축 경사각이 작아지면 계절 변화가 약해집니다. 여름은 덜 더워지고 겨울은 덜 추워지므로 기온의 연교차는 작아집니다."
+            },
+            {
+                id: 7,
+                type: 'fill-in',
+                text: "지구 자전축의 경사각이 현재(23.5°)보다 커지면, 북반구 여름철 태양의 남중 고도는 어떻게 되는가?",
+                answer: "높아진다",
+                options: ["높아진다", "낮아진다", "변함없다", "위도에 따라 다르다"],
+                explanation: "자전축 경사각이 커지면 여름철에 태양을 향해 더 많이 기울어지므로, 태양의 남중 고도가 높아져 더 많은 에너지를 받게 됩니다."
+            },
+            {
+                id: 8,
+                type: 'fill-in',
+                text: "지구의 공전 궤도가 약 10만 년 주기로 원에 가까워졌다가 타원 모양으로 변하는 것을 ( ) 변화라고 한다.",
+                answer: "공전 궤도 이심률",
+                options: ["세차 운동", "자전축 경사각", "공전 궤도 이심률", "공전 속도"],
+                explanation: "이심률은 공전 궤도가 얼마나 찌그러져 있는지를 나타내는 값입니다. 이심률이 커질수록 더 납작한 타원 궤도가 됩니다."
+            },
+            {
+                id: 9,
+                type: 'ox',
+                text: "지구 공전 궤도 이심률이 현재보다 커지면(더 타원형이 되면), 근일점과 원일점에서 지구와 태양 사이의 거리가 현재보다 더 멀어진다.",
+                answer: "X",
+                options: ["O", "X"],
+                explanation: "아닙니다. 이심률이 커지면 근일점 거리는 더 가까워지고, 원일점 거리는 더 멀어집니다."
+            },
+            {
+                id: 10,
+                type: 'fill-in',
+                text: "세차 운동, 자전축 경사각 변화, 이심률 변화가 복합적으로 작용하여 기후 변화를 일으킨다는 이론은 무엇인가?",
+                answer: "밀란코비치 주기",
+                options: ["판게아 이론", "코펜하겐 해석", "밀란코비치 주기", "만유인력 법칙"],
+                explanation: "밀란코비치는 이 세 가지 천문학적 요인의 주기적인 변화가 지구에 도달하는 태양 복사 에너지의 양과 분포를 변화시켜 빙하기와 간빙기를 초래한다고 설명했습니다."
+            },
+            {
+                id: 11,
+                type: 'fill-in',
+                text: "태양의 활동은 약 ( )년 주기로 변하며, 태양 표면의 ( ) 수가 많을수록 활동이 활발하다.",
+                answer: "11; 흑점",
+                options: ["11; 흑점", "26000; 홍염", "10만; 플레어", "4.1만; 흑점"],
+                explanation: "태양 흑점 수는 약 11년을 주기로 증감하며, 흑점 수가 많은 '극대기'에 태양 활동이 활발하여 지구에 도달하는 에너지양이 미세하게 증가합니다."
+            },
+            {
+                id: 12,
+                type: 'ox',
+                text: "17세기 유럽의 소빙하기는 태양 흑점이 거의 관측되지 않았던 시기와 일치한다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 1645년~1715년 사이의 '마운더 극소기'에는 흑점이 매우 적었으며, 이 시기는 유럽과 북미 지역의 기온이 매우 낮았던 소빙하기와 겹칩니다."
+            },
+            {
+                id: 13,
+                type: 'fill-in',
+                text: "대규모 화산 폭발 시 분출된 화산재가 성층권에 퍼지면, 태양 빛을 ( )시켜 지구의 평균 기온을 일시적으로 ( )시킨다.",
+                answer: "반사; 하강",
+                options: ["흡수; 상승", "반사; 상승", "통과; 유지", "반사; 하강"],
+                explanation: "화산재와 황산 에어로졸이 성층권에서 햇빛을 반사하여 지표에 도달하는 태양 복사 에너지 양을 줄이므로, 일시적으로 기온이 낮아지는 효과가 나타납니다."
+            },
+            {
+                id: 14,
+                type: 'fill-in',
+                text: "빙하 면적이 감소하면 지표면의 반사율이 ( )하여, 지구가 흡수하는 태양 복사 에너지양이 증가하고 기온이 상승한다.",
+                answer: "감소",
+                options: ["증가", "감소", "일정", "0"],
+                explanation: "빙하는 반사율이 매우 높지만(50~70%), 빙하가 녹아 드러난 암석이나 바다는 반사율이 낮습니다. 따라서 빙하 면적 감소는 반사율 감소로 이어져 지구 온난화를 가속시킵니다."
+            },
+            {
+                id: 15,
+                type: 'ox',
+                text: "수륙 분포의 변화는 기후 변화의 인위적 요인에 해당한다.",
+                answer: "X",
+                options: ["O", "X"],
+                explanation: "아닙니다. 판의 이동에 따른 수륙 분포의 변화는 수백만 년에 걸쳐 일어나는 지구 내적인 '자연적 요인'입니다. 인위적 요인은 인간의 활동에 의한 것입니다."
+            },
+            {
+                id: 16,
+                type: 'fill-in',
+                text: "지구가 흡수하는 태양 복사 에너지와 방출하는 지구 복사 에너지양이 같아 연평균 기온이 일정하게 유지되는 상태를 무엇이라 하는가?",
+                answer: "복사 평형",
+                options: ["온실 효과", "열대야", "복사 평형", "지구 열수지"],
+                explanation: "지구는 태양으로부터 에너지를 계속 받지만, 받은 만큼 우주로 에너지를 방출하여 전체적인 에너지양의 균형, 즉 복사 평형을 이루고 있습니다."
+            },
+            {
+                id: 17,
+                type: 'fill-in',
+                text: "지구에 들어오는 태양 복사 에너지 100 중, 대기와 지표면에 의해 반사되는 양은 약 ( )% 이다. 이 값을 지구의 반사율이라고 한다.",
+                answer: "30",
+                options: ["10", "30", "50", "70"],
+                explanation: "지구의 반사율(알베도)은 약 30%로, 들어오는 태양 에너지 중 30%는 우주로 즉시 반사되고 나머지 70%가 지구 계에 흡수됩니다."
+            },
+            {
+                id: 18,
+                type: 'fill-in',
+                text: "온실 기체는 태양 복사 에너지는 대부분 통과시키지만, 지표가 방출하는 ( )을/를 흡수하여 지표를 보온하는 효과를 낸다.",
+                answer: "지구 복사 에너지 (적외선)",
+                options: ["가시광선", "자외선", "지구 복사 에너지 (적외선)", "X선"],
+                explanation: "이것이 바로 온실 효과의 핵심 원리입니다. 온실 기체는 파장이 긴 지구 복사 에너지(적외선)를 흡수했다가 지표로 재복사하여 지구의 기온을 생명체가 살기 적합하게 유지합니다."
+            },
+            {
+                id: 19,
+                type: 'ox',
+                text: "지구 열수지에서 대기가 지표로 방출하는 에너지(대기의 재복사)는 온실 효과를 일으키는 중요한 과정이다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 대기가 흡수한 에너지를 다시 지표로 방출(재복사)하기 때문에, 지표는 태양으로부터 직접 받는 에너지보다 더 많은 에너지를 받게 되어 온도가 높아집니다."
+            },
+            {
+                id: 20,
+                type: 'fill-in',
+                text: "온실 효과에 가장 크게 기여하는 온실 기체는 무엇인가?",
+                answer: "수증기",
+                options: ["이산화탄소", "메테인", "오존", "수증기"],
+                explanation: "자연적인 온실 효과에 가장 크게 기여하는 기체는 대기 중에 가장 많은 양이 존재하는 수증기(H₂O)입니다."
+            },
+            {
+                id: 21,
+                type: 'fill-in',
+                text: "산업 혁명 이후 인간 활동으로 인해 농도가 가장 급격하게 증가하여, 현재 지구 온난화의 주된 원인이 되는 온실 기체는 무엇인가?",
+                answer: "이산화탄소",
+                options: ["이산화탄소", "수증기", "산화이질소", "프레온가스"],
+                explanation: "화석 연료의 사용 급증으로 인해 대기 중 이산화탄소(CO₂) 농도가 산업 혁명 이전에 비해 폭발적으로 증가했으며, 이것이 현재 지구 온난화를 일으키는 가장 큰 원인입니다."
+            },
+            {
+                id: 22,
+                type: 'fill-in',
+                text: "지구 온난화로 인한 해수면 상승의 두 가지 주된 원인은 ( )과/와 대륙 빙하의 융해이다.",
+                answer: "해수의 열팽창",
+                options: ["강수량 증가", "지반 침하", "해수의 열팽창", "해저 화산 활동"],
+                explanation: "지구 온난화로 수온이 상승하면 물의 부피 자체가 늘어나는 '해수의 열팽창' 효과가 나타납니다. 이것이 육지의 빙하가 녹아 바다로 흘러드는 것과 함께 해수면 상승의 가장 큰 원인입니다."
+            },
+            {
+                id: 23,
+                type: 'ox',
+                text: "바다에 떠 있는 빙하(해빙)가 녹으면 해수면이 크게 상승한다.",
+                answer: "X",
+                options: ["O", "X"],
+                explanation: "아닙니다. 아르키메데스의 원리에 따라, 이미 물에 떠 있는 얼음(해빙)이 녹는 것은 해수면 높이에 거의 영향을 주지 않습니다. 해수면 상승에 영향을 주는 것은 육지 위에 있던 빙하(대륙 빙하)가 녹아 바다로 유입되는 것입니다."
+            },
+            {
+                id: 24,
+                type: 'fill-in',
+                text: "최근 100년간 한반도의 평균 기온은 전 지구 평균보다 ( ) 상승하였다.",
+                answer: "더 큰 폭으로",
+                options: ["더 작은 폭으로", "비슷한 폭으로", "더 큰 폭으로", "오히려 하강"],
+                explanation: "한반도의 기온 상승률은 전 지구 평균 기온 상승률보다 약 2배 정도 높아, 지구 온난화의 영향을 더 크게 받고 있음을 보여줍니다."
+            },
+            {
+                id: 25,
+                type: 'fill-in',
+                text: "지구 온난화의 해결 방안 중, 산업 시설에서 발생하는 이산화탄소를 포집하여 지층 속에 저장하는 기술을 무엇이라고 하는가?",
+                answer: "이산화탄소 포집 및 저장 기술(CCS)",
+                options: ["해양 비옥화", "신재생 에너지", "이산화탄소 포집 및 저장 기술(CCS)", "에너지 효율 개선"],
+                explanation: "CCS(Carbon Capture and Storage) 기술은 이미 배출된 이산화탄소를 대기 중에서 제거하거나, 배출원에서 직접 포집하여 안전하게 격리하는 적극적인 온난화 대응 기술입니다."
+            },
+            {
+                id: 26,
+                type: 'fill-in',
+                text: "1997년 채택되어 선진국에 의무적인 온실 기체 감축 목표를 부과했던 국제 협약은 무엇인가?",
+                answer: "교토 의정서",
+                options: ["리우 협약", "파리 협정", "몬트리올 의정서", "교토 의정서"],
+                explanation: "교토 의정서는 선진국들에게 구체적인 감축 의무를 부과했다는 점에서 의미가 있지만, 미국과 중국 등 주요 배출국이 참여하지 않아 한계가 있었습니다."
+            },
+            {
+                id: 27,
+                type: 'fill-in',
+                text: "2015년 채택되어 선진국과 개발도상국 모두가 온실 기체 감축에 참여하기로 한 국제 협약은 ( )이다.",
+                answer: "파리 협정",
+                options: ["교토 의정서", "스톡홀름 선언", "파리 협정", "IPCC 보고서"],
+                explanation: "파리 협정은 교토 의정서 체제를 대체하는 새로운 기후 체제로, 모든 당사국이 자발적으로 온실가스 감축 목표(NDC)를 제출하고 이행하는 것을 골자로 합니다."
+            },
+            {
+                id: 28,
+                type: 'ox',
+                text: "최근 연도별 이산화탄소 농도 그래프를 보면, 농도는 전체적으로 상승하면서 1년 주기로 오르내림을 반복한다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 이는 식물의 광합성 활동 때문입니다. 식생이 풍부한 북반구의 여름(5~9월)에는 광합성으로 CO₂가 감소하고, 겨울에는 호흡으로 다시 증가하는 현상이 반복됩니다."
+            },
+            {
+                id: 29,
+                type: 'fill-in',
+                text: "대기 중 에어로졸은 태양 빛을 ( )하여 지구 기온을 ( )시키는 효과를 줄 수 있다.",
+                answer: "차단(반사); 낮추는",
+                options: ["증폭; 높이는", "차단(반사); 낮추는", "흡수; 높이는", "통과; 유지하는"],
+                explanation: "인간 활동으로 배출된 에어로졸 입자들은 구름의 응결핵 역할을 하거나 직접 햇빛을 반사하여 지구의 반사율을 높이는 '양산 효과'를 통해 기온을 낮추는 역할을 하기도 합니다."
+            },
+            {
+                id: 30,
+                type: 'ox',
+                text: "지구 온난화는 단순히 기온만 상승시키는 것이 아니라, 엘니뇨 강화, 해수 순환 변화 등 지구 시스템 전체에 복합적인 변화를 초래한다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 지구 온난화는 기온 상승을 넘어 해수면 상승, 생태계 교란, 이상 기후 발생 빈도 증가, 해수 순환 시스템 변화 등 지구 전체 시스템에 광범위하고 복합적인 영향을 미칩니다."
+            }
+        ];
+
+        // ------------------ 명언 목록 ------------------
+        const motivationalQuotes = [
+            "오늘의 노력이 내일의 너를 만든다.", "포기하지 않는 한, 실패는 없다.", "가장 큰 위험은 아무 위험도 감수하지 않는 것이다.",
+            "배움은 의무도, 생존도 아니다. 그것은 우리의 가장 큰 특권이다.", "성공은 최종 목적지가 아니며, 실패는 치명적이지 않다. 중요한 것은 계속 나아가는 용기다.",
+            "작은 성공들이 모여 큰 성공을 이룬다.", "어제보다 나은 오늘, 오늘보다 나은 내일을 만들자.",
+            "가장 큰 영광은 한 번도 실패하지 않음이 아니라 실패할 때마다 다시 일어서는 데에 있다.", "천리길도 한 걸음부터.", "노력은 결코 배신하지 않는다."
+        ];
+
+        // ------------------ DOM 요소 ------------------
+        const quizElement = document.getElementById('quiz');
+        const paginationControlsElement = document.getElementById('pagination-controls');
+        const submitPageButton = document.getElementById('submit-page-btn');
+        const scoreSectionElement = document.getElementById('score-section');
+        const currentPageScoreTextElement = document.getElementById('current-page-score-text');
+        const totalScoreTextElement = document.getElementById('total-score-text');
+        const pageInfoElement = document.getElementById('page-info');
+        const quizMainTitleDisplayElement = document.getElementById('quiz-main-title-in-score');
+        const motivationalQuoteElement = document.getElementById('motivational-quote');
+        
+        const welcomePopup = document.getElementById('welcome-popup');
+        const popupPasswordInput = document.getElementById('popup-password');
+        const popupConfirmButton = document.getElementById('popup-confirm');
+        const popupErrorMessage = document.getElementById('popup-error');
+
+        // ------------------ 퀴즈 설정 ------------------
+        const correctPassword = "chan"; // 비밀번호 설정
+        const questionsPerPage = 5; // 페이지 당 문제 수
+        let currentPage = 0;
+        let pageScores = [];
+        let pageAttempted = [];
+
+        // ------------------ 함수 ------------------
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function initializeQuizData() {
+            questions.forEach(q => {
+                q.userAnswer = null;
+                q.isCorrect = null;
+                q.attemptedThisSession = false;
+                if (q.options) {
+                   shuffleArray(q.options);
+                }
+            });
+            const numPages = Math.ceil(questions.length / questionsPerPage);
+            pageAttempted = new Array(numPages).fill(false);
+            pageScores = new Array(numPages).fill(0);
+        }
+
+        function renderQuestionsForPage(page) {
+            quizElement.innerHTML = '';
+            currentPage = page;
+
+            const start = page * questionsPerPage;
+            const end = Math.min(start + questionsPerPage, questions.length);
+            const questionsOnPage = questions.slice(start, end);
+
+            pageInfoElement.textContent = `총 ${questions.length}문제 중 ${start + 1} - ${end}번 문제`;
+
+            questionsOnPage.forEach((q, indexOnPage) => {
+                const questionCard = document.createElement('div');
+                questionCard.classList.add('question-card');
+                questionCard.id = `question-${q.id}`;
+
+                const questionText = document.createElement('p');
+                questionText.classList.add('question-text');
+                questionText.innerHTML = `${q.id}. ${q.text.replace(/(\(\s*\))/g, '<span class="blank-emphasis">( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</span>')}`;
+                questionCard.appendChild(questionText);
+
+                const optionsContainer = document.createElement('div');
+                optionsContainer.classList.add('options');
+
+                q.options.forEach((option, index) => {
+                    const optionId = `q${q.id}-option-${index}`;
+                    
+                    const radioInput = document.createElement('input');
+                    radioInput.type = 'radio';
+                    radioInput.id = optionId;
+                    radioInput.name = `question-${q.id}`;
+                    radioInput.value = option;
+                    radioInput.classList.add('option-input', 'hidden');
+                    if (q.userAnswer === option) radioInput.checked = true;
+                    if (pageAttempted[currentPage]) radioInput.disabled = true;
+
+                    const optionLabel = document.createElement('label');
+                    optionLabel.htmlFor = optionId;
+                    optionLabel.textContent = option;
+                    optionLabel.classList.add('option-label');
+                    if (pageAttempted[currentPage]) optionLabel.classList.add('opacity-70', 'cursor-not-allowed');
+
+                    optionsContainer.appendChild(radioInput);
+                    optionsContainer.appendChild(optionLabel);
+                });
+                questionCard.appendChild(optionsContainer);
+
+                const feedbackElement = document.createElement('div');
+                feedbackElement.classList.add('feedback');
+                feedbackElement.style.display = 'none';
+                questionCard.appendChild(feedbackElement);
+                
+                if (pageAttempted[currentPage] && q.attemptedThisSession) {
+                    showFeedbackForQuestion(q, questionCard);
+                }
+                quizElement.appendChild(questionCard);
+            });
+
+            const numPages = Math.ceil(questions.length / questionsPerPage);
+            if (numPages > 1) {
+                paginationControlsElement.style.display = 'flex';
+                renderPaginationControls();
+            } else {
+                paginationControlsElement.style.display = 'none';
+            }
+
+            submitPageButton.disabled = pageAttempted[currentPage];
+            if (pageAttempted[currentPage]) {
+                submitPageButton.textContent = '채점 완료';
+                scoreSectionElement.style.display = 'block';
+                updateScoreDisplay();
+                showMotivationalQuote();
+            } else {
+                submitPageButton.textContent = '이번 페이지 채점하기';
+                motivationalQuoteElement.style.display = 'none';
+                if (questionsOnPage.length > 0) {
+                    scoreSectionElement.style.display = 'none';
+                }
+            }
+        }
+        
+        function showFeedbackForQuestion(question, questionCard) {
+            const feedbackElement = questionCard.querySelector('.feedback');
+            if (!feedbackElement) return;
+
+            feedbackElement.innerHTML = '';
+            
+            if (question.isCorrect) {
+                feedbackElement.innerHTML = '<strong class="font-semibold">정답입니다!</strong> 🎉';
+                feedbackElement.className = 'feedback correct';
+            } else {
+                feedbackElement.innerHTML = `<strong class="font-semibold">오답입니다.</strong> 정답은 "<span class="font-bold text-red-700">${question.answer}</span>"입니다.`;
+                feedbackElement.className = 'feedback incorrect';
+            }
+
+            const explanationElement = document.createElement('p');
+            explanationElement.classList.add('explanation');
+            explanationElement.innerHTML = `<strong class="font-semibold">해설:</strong> ${question.explanation}`;
+            feedbackElement.appendChild(explanationElement);
+            feedbackElement.style.display = 'block';
+        }
+
+        function renderPaginationControls() {
+            paginationControlsElement.innerHTML = '';
+            const numPages = Math.ceil(questions.length / questionsPerPage);
+
+            const prevButton = document.createElement('button');
+            prevButton.textContent = '이전';
+            prevButton.disabled = currentPage === 0;
+            prevButton.onclick = () => renderQuestionsForPage(currentPage - 1);
+            paginationControlsElement.appendChild(prevButton);
+
+            for (let i = 0; i < numPages; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i + 1;
+                pageButton.classList.add('page-number');
+                if (i === currentPage) {
+                    pageButton.classList.add('current');
+                }
+                pageButton.onclick = () => renderQuestionsForPage(i);
+                paginationControlsElement.appendChild(pageButton);
+            }
+
+            const nextButton = document.createElement('button');
+            nextButton.textContent = '다음';
+            nextButton.disabled = currentPage === numPages - 1;
+            nextButton.onclick = () => renderQuestionsForPage(currentPage + 1);
+            paginationControlsElement.appendChild(nextButton);
+        }
+
+        function showMotivationalQuote() {
+            const randomIndex = Math.floor(Math.random() * motivationalQuotes.length);
+            motivationalQuoteElement.textContent = motivationalQuotes[randomIndex];
+            motivationalQuoteElement.style.display = 'block';
+        }
+
+        function updateScoreDisplay() {
+            const questionsOnThisPageCount = Math.min(questionsPerPage, questions.length - (currentPage * questionsPerPage));
+            currentPageScoreTextElement.textContent = `이번 페이지 점수: ${pageScores[currentPage]} / ${questionsOnThisPageCount}`;
+            
+            let currentTotalScore = 0;
+            let currentTotalAttemptedQuestions = 0;
+            for(let i=0; i < pageAttempted.length; i++){
+                if(pageAttempted[i]){
+                    const start = i * questionsPerPage;
+                    const end = Math.min(start + questionsPerPage, questions.length);
+                    currentTotalAttemptedQuestions += (end-start);
+                    currentTotalScore += pageScores[i];
+                }
+            }
+
+            const quizTitleElement = document.querySelector('h1');
+            quizMainTitleDisplayElement.textContent = quizTitleElement.textContent;
+
+            if (currentTotalAttemptedQuestions > 0) {
+                totalScoreTextElement.style.display = 'block';
+                totalScoreTextElement.textContent = `총 누적 점수: ${currentTotalScore} / ${currentTotalAttemptedQuestions}`;
+            } else {
+                totalScoreTextElement.style.display = 'none';
+            }
+        }
+        
+        // ------------------ 이벤트 리스너 ------------------
+
+        submitPageButton.addEventListener('click', () => {
+            if (pageAttempted[currentPage]) return;
+
+            let scoreForThisPage = 0;
+            
+            const start = currentPage * questionsPerPage;
+            const end = Math.min(start + questionsPerPage, questions.length);
+            const questionsOnPage = questions.slice(start, end);
+
+            questionsOnPage.forEach((q, indexOnPage) => {
+                const questionCard = quizElement.children[indexOnPage];
+                const selectedOptionInput = questionCard.querySelector(`input[name="question-${q.id}"]:checked`);
+                
+                q.attemptedThisSession = true;
+
+                if (selectedOptionInput) {
+                    q.userAnswer = selectedOptionInput.value;
+                    q.isCorrect = (q.userAnswer === q.answer);
+                    
+                    if (q.isCorrect) {
+                        scoreForThisPage++;
+                    }
+                    showFeedbackForQuestion(q, questionCard);
+
+                    const radioInputs = questionCard.querySelectorAll('input[type="radio"]');
+                    radioInputs.forEach(input => input.disabled = true);
+                } else {
+                    const feedbackElement = questionCard.querySelector('.feedback');
+                    feedbackElement.textContent = '답을 선택하지 않았습니다.';
+                    feedbackElement.className = 'feedback incorrect';
+                    feedbackElement.style.display = 'block';
+                    q.isCorrect = false;
+                }
+            });
+            
+            pageScores[currentPage] = scoreForThisPage;
+            pageAttempted[currentPage] = true;
+            submitPageButton.disabled = true;
+            submitPageButton.textContent = '채점 완료';
+            
+            scoreSectionElement.style.display = 'block';
+            updateScoreDisplay();
+            showMotivationalQuote();
+
+            const quizContainerElement = document.querySelector('.quiz-container');
+            if (quizContainerElement) {
+                quizContainerElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+
+        // ------------------ 팝업 및 초기화 ------------------
+        
+        window.onload = () => {
+            if (welcomePopup) {
+                const popupSessionKey = 'climateChangeQuizChanT'; 
+                const popupShownThisSession = sessionStorage.getItem(popupSessionKey);
+                if (!popupShownThisSession) {
+                    welcomePopup.classList.add('show');
+                } else {
+                    initializeQuizData();
+                    renderQuestionsForPage(0);
+                }
+            } else {
+                initializeQuizData();
+                renderQuestionsForPage(0);
+            }
+        };
+
+        if (popupConfirmButton) {
+            popupConfirmButton.addEventListener('click', () => {
+                if (popupPasswordInput.value === correctPassword) {
+                    if (welcomePopup) {
+                        welcomePopup.classList.remove('show');
+                    }
+                    const popupSessionKey = 'climateChangeQuizChanT';
+                    sessionStorage.setItem(popupSessionKey, 'true');
+                    initializeQuizData();
+                    renderQuestionsForPage(0);
+                } else {
+                    if (popupErrorMessage) {
+                        popupErrorMessage.textContent = "비밀번호가 틀렸습니다. 다시 시도해주세요.";
+                    }
+                    popupPasswordInput.value = '';
+                    popupPasswordInput.focus();
+                }
+            });
+        }
+        
+        if (popupPasswordInput) {
+            popupPasswordInput.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    popupConfirmButton.click();
+                }
+            });
+        }
+
+    </script>
+</body>
+</html>
