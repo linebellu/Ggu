@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>찬T의 기압과 날씨 변화 퀴즈</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f0f4f8;
+        }
+        .quiz-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 1.5rem;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .question-card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #2d3748;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        .question-text .blank-emphasis {
+            font-weight: bold;
+            color: #3b82f6;
+        }
+        .option-label {
+            display: block;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+            background-color: #f7fafc;
+        }
+        .option-label:hover {
+            background-color: #e2e8f0;
+        }
+        .option-input:checked + .option-label {
+            background-color: #4299e1;
+            color: white;
+            border-color: #2b6cb0;
+        }
+        .feedback {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+        .feedback.correct {
+            background-color: #c6f6d5;
+            color: #2f855a;
+            border: 1px solid #9ae6b4;
+        }
+        .feedback.incorrect {
+            background-color: #fed7d7;
+            color: #c53030;
+            border: 1px solid #fbb6ce;
+        }
+        .explanation {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #4a5568;
+            line-height: 1.5;
+        }
+        .action-button {
+            background-color: #4a5568;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border: none;
+            margin-top: 1rem;
+            margin-right: 0.5rem;
+        }
+        .action-button:hover:not(:disabled) {
+            background-color: #2d3748;
+        }
+        .action-button:disabled {
+            background-color: #a0aec0;
+            cursor: not-allowed;
+        }
+        .pagination-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        .pagination-controls button, .pagination-controls span {
+            margin: 0 0.25rem;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            background-color: #fff;
+            cursor: pointer;
+        }
+        .pagination-controls button:disabled {
+            background-color: #e2e8f0;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .pagination-controls .page-number.current {
+            background-color: #4299e1;
+            color: white;
+            border-color: #2b6cb0;
+            font-weight: bold;
+        }
+        .score-section {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background-color: #e9f5ff;
+            border-radius: 8px;
+            text-align: left;
+        }
+        .score-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #1a202c;
+            margin-bottom: 0.5rem;
+        }
+        .quiz-title-in-score {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #1e40af;
+            margin-bottom: 0.75rem;
+        }
+        .motivational-quote {
+            font-size: 1rem;
+            font-style: italic;
+            color: #374151;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px dashed #cbd5e0;
+            text-align: center;
+        }
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a202c;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .page-info {
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: #4a5568;
+        }
+        .popup-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); display: flex;
+            justify-content: center; align-items: center; z-index: 1000;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        .popup-overlay.show { opacity: 1; visibility: visible; }
+        .popup-content {
+            background-color: white; padding: 2.5rem; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); text-align: center;
+            max-width: 420px; width: 90%;
+        }
+        .popup-content h2 {
+            font-size: 1.75rem; font-weight: 700; color: #1a202c; margin-bottom: 1rem;
+        }
+        .popup-content p.welcome-message {
+            font-size: 1rem; color: #4a5568; margin-bottom: 1.5rem; line-height: 1.6;
+        }
+        .popup-password-input {
+            width: 100%; padding: 0.75rem; margin-bottom: 1rem;
+            border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem;
+            box-sizing: border-box;
+        }
+        .popup-confirm-btn {
+            background-color: #3b82f6; color: white; padding: 0.75rem 1.5rem;
+            border-radius: 8px; font-weight: 500; cursor: pointer;
+            transition: background-color 0.2s; border: none; width: 100%;
+            font-size: 1rem;
+        }
+        .popup-confirm-btn:hover { background-color: #2563eb; }
+        .popup-error-message {
+            color: #ef4444; font-size: 0.875rem; margin-top: 0.75rem;
+            min-height: 1.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="welcome-popup" class="popup-overlay">
+        <div class="popup-content">
+            <h2>찬T의 퀴즈</h2>
+            <p class="welcome-message">비밀번호를 입력해주세요.</p>
+            <input type="password" id="popup-password" class="popup-password-input" placeholder="비밀번호">
+            <button id="popup-confirm" class="popup-confirm-btn">확인</button>
+            <p id="popup-error" class="popup-error-message"></p>
+        </div>
+    </div>
+    <div class="quiz-container">
+        <h1>찬T의 기압과 날씨 변화 퀴즈</h1>
+        <div class="page-info" id="page-info"></div>
+        <div id="quiz">
+            </div>
+        <div class="pagination-controls" id="pagination-controls">
+            </div>
+        <button id="submit-page-btn" class="action-button w-full sm:w-auto mx-auto block">이번 페이지 채점하기</button>
+        <div class="score-section" id="score-section" style="display: none;">
+            <p class="score-text quiz-title-in-score" id="quiz-main-title-in-score"></p>
+            <p class="score-text" id="current-page-score-text"></p>
+            <p class="score-text" id="total-score-text"></p>
+            <p class="motivational-quote" id="motivational-quote" style="display: none;"></p>
+        </div>
+    </div>
+
+    <script>
+        // ------------------ 문제 데이터 (총 30문제) ------------------
+        const questions = [
+            {
+                id: 1,
+                type: 'fill-in',
+                text: "북반구에서, 주위보다 기압이 높은 고기압 중심부에서는 바람이 [BLANK] 방향으로 불어 나간다.",
+                answer: "시계",
+                options: ["시계", "시계 반대", "직선", "알 수 없는"],
+                explanation: "북반구 고기압에서는 하강 기류가 발생하여 지상에서 바람이 시계 방향으로 불어 나갑니다. 이는 전향력의 영향 때문입니다."
+            },
+            {
+                id: 2,
+                type: 'fill-in',
+                text: "저기압 중심부에서는 공기가 [BLANK]하여 단열 팽창하므로, 구름이 생성되어 날씨가 흐리다.",
+                answer: "상승",
+                options: ["하강", "상승", "수렴", "발산"],
+                explanation: "저기압은 주변보다 기압이 낮아 공기가 모여들어 상승합니다. 상승하는 공기는 단열 팽창으로 온도가 낮아져 수증기가 응결, 구름을 만듭니다."
+            },
+            {
+                id: 3,
+                type: 'fill-in',
+                text: "넓은 지역에 걸쳐 기온, 습도 등의 성질이 비슷한 거대한 공기 덩어리를 [BLANK](이)라고 한다.",
+                answer: "기단",
+                options: ["전선", "기단", "고기압", "저기압"],
+                explanation: "기단은 발원지의 성질을 닮으며, 우리나라의 계절별 날씨는 주변의 여러 기단들의 영향을 받아 결정됩니다."
+            },
+            {
+                id: 4,
+                type: 'fill-in',
+                text: "우리나라 겨울철에 한파와 폭설을 몰고 오는 한랭 건조한 기단은 [BLANK]이다.",
+                answer: "시베리아 기단",
+                options: ["오호츠크해 기단", "북태평양 기단", "양쯔강 기단", "시베리아 기단"],
+                explanation: "시베리아 기단은 고위도 대륙에서 형성되어 매우 차고 건조한 성질을 가지며, 겨울철 우리나라 날씨를 지배합니다."
+            },
+            {
+                id: 5,
+                type: 'fill-in',
+                text: "우리나라 여름철에 무더위와 열대야를 가져오는 고온 다습한 기단은 [BLANK]이다.",
+                answer: "북태평양 기단",
+                options: ["오호츠크해 기단", "북태평양 기단", "양쯔강 기단", "시베리아 기단"],
+                explanation: "북태평양 기단은 저위도 해양에서 형성되어 매우 덥고 습한 성질을 가지며, 여름철 우리나라의 무더운 날씨의 원인이 됩니다."
+            },
+            {
+                id: 6,
+                type: 'fill-in',
+                text: "초여름에 오호츠크해 기단과 북태평양 기단이 만나 형성되는 정체전선은 [BLANK]이다.",
+                answer: "장마전선",
+                options: ["한랭전선", "온난전선", "장마전선", "폐색전선"],
+                explanation: "성질이 다른 두 기단인 한랭 다습한 오호츠크해 기단과 고온 다습한 북태평양 기단이 만나 우리나라 상공에 정체하며 오랜 기간 비를 뿌리는 것이 장마입니다."
+            },
+            {
+                id: 7,
+                type: 'ox',
+                text: "봄, 가을철에 우리나라 날씨가 변덕스러운 이유는 이동성 고기압과 저기압이 편서풍을 타고 차례로 통과하기 때문이다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 봄과 가을에는 대륙과 해양의 기단 세력이 비슷해져, 대륙에서 떨어져 나온 작은 규모의 이동성 고기압과 저기압이 자주 통과하여 맑은 날과 흐린 날이 반복됩니다."
+            },
+            {
+                id: 8,
+                type: 'fill-in',
+                text: "찬 기단이 따뜻한 바다 위를 지나갈 때, 기단 하층부가 가열되고 수증기를 공급받아 기층이 [BLANK]해져 적운형 구름이 발달한다.",
+                answer: "불안정",
+                options: ["안정", "불안정", "중립", "건조"],
+                explanation: "기단 하층부가 가열되면 공기가 쉽게 상승할 수 있는 불안정한 상태가 됩니다. 이로 인해 강한 상승 기류와 함께 수직으로 발달하는 적운형 구름이 만들어져 소나기나 폭설을 내리게 됩니다."
+            },
+            {
+                id: 9,
+                type: 'fill-in',
+                text: "성질이 다른 두 기단이 만나 이루는 경계면을 전선면이라 하고, 이 전선면이 지표면과 만나는 선을 [BLANK]이라고 한다.",
+                answer: "전선",
+                options: ["등압선", "전선", "기압골", "등고선"],
+                explanation: "전선은 기온, 습도, 풍향 등 날씨 요소가 급격하게 변하는 경계선입니다."
+            },
+            {
+                id: 10,
+                type: 'fill-in',
+                text: "찬 공기가 따뜻한 공기 밑을 파고들며 빠르게 이동하는 전선으로, 전선 뒤쪽에 소나기성 비를 뿌리는 전선은?",
+                answer: "한랭전선",
+                options: ["한랭전선", "온난전선", "정체전선", "폐색전선"],
+                explanation: "한랭전선은 전선면의 기울기가 급하여 따뜻한 공기를 강하게 밀어 올리므로, 수직으로 발달한 적란운이 형성되어 좁은 구역에 강한 소나기를 내립니다."
+            },
+            {
+                id: 11,
+                type: 'fill-in',
+                text: "따뜻한 공기가 찬 공기를 타고 완만하게 상승하며 이동하는 전선으로, 전선 앞쪽에 넓은 지역에 지속적인 비를 뿌리는 전선은?",
+                answer: "온난전선",
+                options: ["한랭전선", "온난전선", "정체전선", "폐색전선"],
+                explanation: "온난전선은 전선면의 기울기가 완만하여 넓은 지역에 걸쳐 층운형 구름이 형성되므로, 약한 비가 오랫동안 지속되는 특징이 있습니다."
+            },
+            {
+                id: 12,
+                type: 'ox',
+                text: "한랭전선이 통과한 후에는 기온이 상승하고 기압이 하강한다.",
+                answer: "X",
+                options: ["O", "X"],
+                explanation: "아닙니다. 한랭전선은 찬 공기 덩어리의 앞부분이므로, 통과 후에는 찬 공기의 영향권에 들어가 기온이 하강하고 기압은 상승합니다. 풍향은 주로 남서풍에서 북서풍으로 바뀝니다."
+            },
+            {
+                id: 13,
+                type: 'fill-in',
+                text: "이동 속도가 빠른 한랭전선이 느린 온난전선을 따라잡아 두 전선이 겹쳐져 형성되는 전선은 [BLANK]이다.",
+                answer: "폐색전선",
+                options: ["한랭전선", "온난전선", "정체전선", "폐색전선"],
+                explanation: "폐색전선은 온대 저기압이 발달하면서 생애 마지막 단계에 이르렀을 때 형성되며, 이 전선이 형성되면 저기압은 곧 소멸하게 됩니다."
+            },
+            {
+                id: 14,
+                type: 'fill-in',
+                text: "중위도 지방에서 한랭전선과 온난전선을 동반하며 편서풍을 타고 서에서 동으로 이동하는 저기압은 [BLANK]이다.",
+                answer: "온대 저기압",
+                options: ["열대 저기압(태풍)", "이동성 고기압", "온대 저기압", "정체전선"],
+                explanation: "온대 저기압은 우리나라 봄, 가을철 날씨에 큰 영향을 미치며, 전선을 동반하여 통과 시 뚜렷한 날씨 변화를 일으킵니다."
+            },
+            {
+                id: 15,
+                type: 'fill-in',
+                text: "온대 저기압의 주된 에너지원은 무엇인가?",
+                answer: "찬 공기와 따뜻한 공기의 위치 에너지 감소",
+                options: ["수증기의 숨은열", "태양 복사 에너지", "지구 내부 에너지", "찬 공기와 따뜻한 공기의 위치 에너지 감소"],
+                explanation: "성질이 다른 두 공기가 섞이면서, 밀도가 큰 찬 공기는 아래로 가라앉고 밀도가 작은 따뜻한 공기는 위로 올라가 전체적인 무게중심이 낮아집니다. 이때 감소한 위치 에너지가 저기압의 운동 에너지로 전환됩니다."
+            },
+            {
+                id: 16,
+                type: 'fill-in',
+                text: "온대 저기압의 중심 남서쪽에는 [BLANK]이/가, 남동쪽에는 [BLANK]이/가 위치한다.",
+                answer: "한랭전선; 온난전선",
+                options: ["온난전선; 한랭전선", "한랭전선; 온난전선", "폐색전선; 정체전선", "정체전선; 폐색전선"],
+                explanation: "일반적으로 발달한 온대 저기압은 저기압 중심의 앞쪽(동쪽)에 온난전선을, 뒤쪽(서쪽)에 한랭전선을 동반하는 구조를 가집니다."
+            },
+            {
+                id: 17,
+                type: 'ox',
+                text: "온대 저기압이 통과할 때, 관측소의 풍향은 '남동풍 → 남서풍 → 북서풍' 순서로 변한다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 온난전선 통과 전(남동풍) → 온난전선과 한랭전선 사이의 따뜻한 지역(남서풍) → 한랭전선 통과 후(북서풍) 순으로 풍향이 시계 방향으로 변합니다."
+            },
+            {
+                id: 18,
+                type: 'fill-in',
+                text: "기상 위성 영상 중, 태양 빛이 없는 야간에도 관측이 가능하며 구름 꼭대기의 높이를 알 수 있는 것은 [BLANK] 영상이다.",
+                answer: "적외",
+                options: ["가시", "적외", "레이더", "초음파"],
+                explanation: "적외 영상은 물체가 방출하는 적외선(열)을 감지합니다. 고도가 높은 구름일수록 온도가 낮아 적외선을 적게 방출하므로 영상에서 더 밝은 흰색으로 나타납니다."
+            },
+            {
+                id: 19,
+                type: 'fill-in',
+                text: "기상 위성 영상 중, 낮 시간에만 관측이 가능하며 구름의 두께를 알 수 있는 것은 [BLANK] 영상이다.",
+                answer: "가시",
+                options: ["가시", "적외", "레이더", "자기 공명"],
+                explanation: "가시 영상은 태양 빛이 구름에 반사되는 정도를 측정합니다. 따라서 구름이 두꺼울수록 더 많은 빛을 반사하여 영상에서 더 밝은 흰색으로 보입니다."
+            },
+            {
+                id: 20,
+                type: 'ox',
+                text: "가시 영상에서는 밝게 보이지만 적외 영상에서는 어둡게 보이는 구름은, 두께는 두껍지만 고도는 낮은 구름이다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 가시 영상에서 밝은 것은 '두꺼운 구름'을, 적외 영상에서 어두운 것은 '고도가 낮은(온도가 높은) 구름'을 의미합니다. 따라서 이는 두껍고 낮은 하층운임을 알 수 있습니다."
+            },
+            {
+                id: 21,
+                type: 'fill-in',
+                text: "지상에서 전파를 발사하여 비나 눈 입자에 부딪혀 돌아오는 신호를 분석함으로써, 강수 구역과 강수 강도를 파악하는 장비는 [BLANK]이다.",
+                answer: "기상 레이더",
+                options: ["기상 위성", "라디오존데", "기상 레이더", "풍향계"],
+                explanation: "기상 레이더는 강수를 직접 탐지하는 데 특화되어 있어, 비나 눈이 내리는 지역의 정확한 위치와 이동 방향, 강도를 파악하는 데 매우 유용합니다."
+            },
+            {
+                id: 22,
+                type: 'fill-in',
+                text: "우리나라는 [BLANK]의 영향으로 기상 현상이 대체로 서쪽에서 동쪽으로 이동하므로, 서쪽 지방의 날씨를 통해 앞으로의 날씨를 예측할 수 있다.",
+                answer: "편서풍",
+                options: ["무역풍", "편서풍", "극동풍", "계절풍"],
+                explanation: "우리나라가 위치한 중위도 지역은 일 년 내내 상층에 강한 편서풍이 불기 때문에, 모든 기상 시스템(고기압, 저기압 등)이 서에서 동으로 이동하는 경향을 보입니다."
+            },
+            {
+                id: 23,
+                type: 'ox',
+                text: "일기도에서 등압선의 간격이 좁을수록 바람이 약하게 분다.",
+                answer: "X",
+                options: ["O", "X"],
+                explanation: "아닙니다. 등압선의 간격이 좁다는 것은 짧은 거리에 기압 차이가 크다는 의미이므로, 기압 경도력이 커져 바람이 강하게 붑니다."
+            },
+            {
+                id: 24,
+                type: 'fill-in',
+                text: "봄철에 양쯔강 기단의 영향을 받아 날씨가 온난하고 건조하며, 때때로 [BLANK] 현상이 나타난다.",
+                answer: "황사",
+                options: ["장마", "한파", "폭염", "황사"],
+                explanation: "봄철에는 양쯔강 기단이 변질되면서 이동성 고기압의 형태로 우리나라에 영향을 주며, 발원지에서 발생한 황사를 동반하기도 합니다."
+            },
+            {
+                id: 25,
+                type: 'fill-in',
+                text: "한랭전선 전면의 구름은 [BLANK]이고, 온난전선 전면의 구름은 [BLANK]이다.",
+                answer: "적운형; 층운형",
+                options: ["층운형; 적운형", "적운형; 층운형", "권운형; 난운형", "고운형; 저운형"],
+                explanation: "한랭전선은 기울기가 급해 강한 상승 기류로 수직으로 발달하는 적운형 구름을 만들고, 온난전선은 기울기가 완만해 약한 상승 기류로 수평으로 넓게 퍼지는 층운형 구름을 만듭니다."
+            },
+            {
+                id: 26,
+                type: 'ox',
+                text: "온대 저기압이 통과할 때, 강수 구역은 주로 온난전선 뒤쪽과 한랭전선 앞쪽에 형성된다.",
+                answer: "X",
+                options: ["O", "X"],
+                explanation: "아닙니다. 강수 구역은 항상 찬 공기 쪽에서 형성됩니다. 따라서 온난전선의 '앞쪽' 넓은 구역과 한랭전선의 '뒤쪽' 좁은 구역에 비가 내립니다."
+            },
+            {
+                id: 27,
+                type: 'fill-in',
+                text: "규모가 크고 한 자리에 오래 머무는 고기압을 정체성 고기압이라고 한다. 여름철 우리나라에 영향을 주는 [BLANK]이/가 이에 해당한다.",
+                answer: "북태평양 고기압",
+                options: ["시베리아 고기압", "양쯔강 고기압", "오호츠크해 고기압", "북태평양 고기압"],
+                explanation: "여름철에 우리나라를 덮는 북태평양 고기압은 대기 대순환에 의해 형성된 키가 큰 온난 고기압으로, 오랫동안 우리나라에 영향을 미치는 정체성 고기압입니다. 겨울철의 시베리아 고기압도 정체성 고기압에 속합니다."
+            },
+            {
+                id: 28,
+                type: 'fill-in',
+                text: "일기 기호에서 풍향은 바람이 [BLANK] 방향을 나타낸다.",
+                answer: "불어오는",
+                options: ["불어가는", "불어오는", "가장 강한", "가장 약한"],
+                explanation: "풍향은 항상 바람이 시작된 방향을 기준으로 합니다. 예를 들어, 북서풍은 북서쪽에서 불어오는 바람을 의미합니다."
+            },
+            {
+                id: 29,
+                type: 'ox',
+                text: "따뜻한 기단이 차가운 바다 위를 지나가면 기층이 안정해져 안개가 자주 발생한다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 따뜻하고 습한 공기의 하층부가 차갑게 냉각되면 공기의 상승이 억제되어 안정한 층이 형성되고, 이로 인해 안개나 이슬비, 층운형 구름이 만들어지기 쉽습니다."
+            },
+            {
+                id: 30,
+                type: 'fill-in',
+                text: "온대 저기압 중심의 북쪽에 위치한 관측소에서는 저기압이 통과할 때 풍향이 [BLANK] 방향으로 변한다.",
+                answer: "시계 반대",
+                options: ["시계", "시계 반대", "변하지 않고", "알 수 없는"],
+                explanation: "관측소가 저기압 중심의 북쪽을 지날 경우, 풍향이 동풍 → 북풍 → 서풍 계열로 시계 반대 방향으로 변하게 됩니다."
+            }
+        ];
+
+        // ------------------ 명언 목록 ------------------
+        const motivationalQuotes = [
+            "오늘의 노력이 내일의 너를 만든다.", "포기하지 않는 한, 실패는 없다.", "가장 큰 위험은 아무 위험도 감수하지 않는 것이다.",
+            "배움은 의무도, 생존도 아니다. 그것은 우리의 가장 큰 특권이다.", "성공은 최종 목적지가 아니며, 실패는 치명적이지 않다. 중요한 것은 계속 나아가는 용기다.",
+            "작은 성공들이 모여 큰 성공을 이룬다.", "어제보다 나은 오늘, 오늘보다 나은 내일을 만들자.",
+            "가장 큰 영광은 한 번도 실패하지 않음이 아니라 실패할 때마다 다시 일어서는 데에 있다.", "천리길도 한 걸음부터.", "노력은 결코 배신하지 않는다."
+        ];
+
+        // ------------------ DOM 요소 ------------------
+        const quizElement = document.getElementById('quiz');
+        const paginationControlsElement = document.getElementById('pagination-controls');
+        const submitPageButton = document.getElementById('submit-page-btn');
+        const scoreSectionElement = document.getElementById('score-section');
+        const currentPageScoreTextElement = document.getElementById('current-page-score-text');
+        const totalScoreTextElement = document.getElementById('total-score-text');
+        const pageInfoElement = document.getElementById('page-info');
+        const quizMainTitleDisplayElement = document.getElementById('quiz-main-title-in-score');
+        const motivationalQuoteElement = document.getElementById('motivational-quote');
+        
+        const welcomePopup = document.getElementById('welcome-popup');
+        const popupPasswordInput = document.getElementById('popup-password');
+        const popupConfirmButton = document.getElementById('popup-confirm');
+        const popupErrorMessage = document.getElementById('popup-error');
+
+        // ------------------ 퀴즈 설정 ------------------
+        const correctPassword = "chan"; // 비밀번호 설정
+        const questionsPerPage = 5; // 페이지 당 문제 수
+        let currentPage = 0;
+        let pageScores = [];
+        let pageAttempted = [];
+
+        // ------------------ 함수 ------------------
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function initializeQuizData() {
+            questions.forEach(q => {
+                q.userAnswer = null;
+                q.isCorrect = null;
+                q.attemptedThisSession = false;
+                if (q.options) {
+                   shuffleArray(q.options);
+                }
+            });
+            const numPages = Math.ceil(questions.length / questionsPerPage);
+            pageAttempted = new Array(numPages).fill(false);
+            pageScores = new Array(numPages).fill(0);
+        }
+
+        function renderQuestionsForPage(page) {
+            quizElement.innerHTML = '';
+            currentPage = page;
+
+            const start = page * questionsPerPage;
+            const end = Math.min(start + questionsPerPage, questions.length);
+            const questionsOnPage = questions.slice(start, end);
+
+            pageInfoElement.textContent = `총 ${questions.length}문제 중 ${start + 1} - ${end}번 문제`;
+
+            questionsOnPage.forEach((q, indexOnPage) => {
+                const questionCard = document.createElement('div');
+                questionCard.classList.add('question-card');
+                questionCard.id = `question-${q.id}`;
+
+                const questionText = document.createElement('p');
+                questionText.classList.add('question-text');
+                let processedText = q.text.replace(/\[BLANK\]/g, '<span class="blank-emphasis">( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</span>');
+                questionText.innerHTML = `${q.id}. ${processedText}`;
+                
+                questionCard.appendChild(questionText);
+
+                const optionsContainer = document.createElement('div');
+                optionsContainer.classList.add('options');
+
+                q.options.forEach((option, index) => {
+                    const optionId = `q${q.id}-option-${index}`;
+                    
+                    const radioInput = document.createElement('input');
+                    radioInput.type = 'radio';
+                    radioInput.id = optionId;
+                    radioInput.name = `question-${q.id}`;
+                    radioInput.value = option;
+                    radioInput.classList.add('option-input', 'hidden');
+                    if (q.userAnswer === option) radioInput.checked = true;
+                    if (pageAttempted[currentPage]) radioInput.disabled = true;
+
+                    const optionLabel = document.createElement('label');
+                    optionLabel.htmlFor = optionId;
+                    optionLabel.textContent = option;
+                    optionLabel.classList.add('option-label');
+                    if (pageAttempted[currentPage]) optionLabel.classList.add('opacity-70', 'cursor-not-allowed');
+
+                    optionsContainer.appendChild(radioInput);
+                    optionsContainer.appendChild(optionLabel);
+                });
+                questionCard.appendChild(optionsContainer);
+
+                const feedbackElement = document.createElement('div');
+                feedbackElement.classList.add('feedback');
+                feedbackElement.style.display = 'none';
+                questionCard.appendChild(feedbackElement);
+                
+                if (pageAttempted[currentPage] && q.attemptedThisSession) {
+                    showFeedbackForQuestion(q, questionCard);
+                }
+                quizElement.appendChild(questionCard);
+            });
+
+            if (window.MathJax) {
+                MathJax.typesetPromise([quizElement]).catch((err) => console.log('MathJax typeset failed: ' + err.message));
+            }
+
+            const numPages = Math.ceil(questions.length / questionsPerPage);
+            if (numPages > 1) {
+                paginationControlsElement.style.display = 'flex';
+                renderPaginationControls();
+            } else {
+                paginationControlsElement.style.display = 'none';
+            }
+
+            submitPageButton.disabled = pageAttempted[currentPage];
+            if (pageAttempted[currentPage]) {
+                submitPageButton.textContent = '채점 완료';
+                scoreSectionElement.style.display = 'block';
+                updateScoreDisplay();
+                showMotivationalQuote();
+            } else {
+                submitPageButton.textContent = '이번 페이지 채점하기';
+                motivationalQuoteElement.style.display = 'none';
+                if (questionsOnPage.length > 0) {
+                    scoreSectionElement.style.display = 'none';
+                }
+            }
+        }
+        
+        function showFeedbackForQuestion(question, questionCard) {
+            const feedbackElement = questionCard.querySelector('.feedback');
+            if (!feedbackElement) return;
+
+            feedbackElement.innerHTML = '';
+            
+            if (question.isCorrect) {
+                feedbackElement.innerHTML = '<strong class="font-semibold">정답입니다!</strong> 🎉';
+                feedbackElement.className = 'feedback correct';
+            } else {
+                feedbackElement.innerHTML = `<strong class="font-semibold">오답입니다.</strong> 정답은 "<span class="font-bold text-red-700">${question.answer}</span>"입니다.`;
+                feedbackElement.className = 'feedback incorrect';
+            }
+
+            const explanationElement = document.createElement('p');
+            explanationElement.classList.add('explanation');
+            explanationElement.innerHTML = `<strong class="font-semibold">해설:</strong> ${question.explanation}`;
+            feedbackElement.appendChild(explanationElement);
+            feedbackElement.style.display = 'block';
+
+            if (window.MathJax) {
+                MathJax.typesetPromise([feedbackElement]).catch((err) => console.log('MathJax typeset failed: ' + err.message));
+            }
+        }
+
+        function renderPaginationControls() {
+            paginationControlsElement.innerHTML = '';
+            const numPages = Math.ceil(questions.length / questionsPerPage);
+
+            const prevButton = document.createElement('button');
+            prevButton.textContent = '이전';
+            prevButton.disabled = currentPage === 0;
+            prevButton.onclick = () => renderQuestionsForPage(currentPage - 1);
+            paginationControlsElement.appendChild(prevButton);
+
+            for (let i = 0; i < numPages; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i + 1;
+                pageButton.classList.add('page-number');
+                if (i === currentPage) {
+                    pageButton.classList.add('current');
+                }
+                pageButton.onclick = () => renderQuestionsForPage(i);
+                paginationControlsElement.appendChild(pageButton);
+            }
+
+            const nextButton = document.createElement('button');
+            nextButton.textContent = '다음';
+            nextButton.disabled = currentPage === numPages - 1;
+            nextButton.onclick = () => renderQuestionsForPage(currentPage + 1);
+            paginationControlsElement.appendChild(nextButton);
+        }
+
+        function showMotivationalQuote() {
+            const randomIndex = Math.floor(Math.random() * motivationalQuotes.length);
+            motivationalQuoteElement.textContent = motivationalQuotes[randomIndex];
+            motivationalQuoteElement.style.display = 'block';
+        }
+
+        function updateScoreDisplay() {
+            const questionsOnThisPageCount = Math.min(questionsPerPage, questions.length - (currentPage * questionsPerPage));
+            currentPageScoreTextElement.textContent = `이번 페이지 점수: ${pageScores[currentPage]} / ${questionsOnThisPageCount}`;
+            
+            let currentTotalScore = 0;
+            let currentTotalAttemptedQuestions = 0;
+            for(let i=0; i < pageAttempted.length; i++){
+                if(pageAttempted[i]){
+                    const start = i * questionsPerPage;
+                    const end = Math.min(start + questionsPerPage, questions.length);
+                    currentTotalAttemptedQuestions += (end-start);
+                    currentTotalScore += pageScores[i];
+                }
+            }
+
+            const quizTitleElement = document.querySelector('h1');
+            quizMainTitleDisplayElement.textContent = quizTitleElement.textContent;
+
+            if (currentTotalAttemptedQuestions > 0) {
+                totalScoreTextElement.style.display = 'block';
+                totalScoreTextElement.textContent = `총 누적 점수: ${currentTotalScore} / ${currentTotalAttemptedQuestions}`;
+            } else {
+                totalScoreTextElement.style.display = 'none';
+            }
+        }
+        
+        // ------------------ 이벤트 리스너 ------------------
+
+        submitPageButton.addEventListener('click', () => {
+            if (pageAttempted[currentPage]) return;
+
+            let scoreForThisPage = 0;
+            
+            const start = currentPage * questionsPerPage;
+            const end = Math.min(start + questionsPerPage, questions.length);
+            const questionsOnPage = questions.slice(start, end);
+
+            questionsOnPage.forEach((q, indexOnPage) => {
+                const questionCard = quizElement.children[indexOnPage];
+                const selectedOptionInput = questionCard.querySelector(`input[name="question-${q.id}"]:checked`);
+                
+                q.attemptedThisSession = true;
+
+                if (selectedOptionInput) {
+                    q.userAnswer = selectedOptionInput.value;
+                    q.isCorrect = (q.userAnswer === q.answer);
+                    
+                    if (q.isCorrect) {
+                        scoreForThisPage++;
+                    }
+                    showFeedbackForQuestion(q, questionCard);
+
+                    const radioInputs = questionCard.querySelectorAll('input[type="radio"]');
+                    radioInputs.forEach(input => input.disabled = true);
+                } else {
+                    const feedbackElement = questionCard.querySelector('.feedback');
+                    feedbackElement.textContent = '답을 선택하지 않았습니다.';
+                    feedbackElement.className = 'feedback incorrect';
+                    feedbackElement.style.display = 'block';
+                    q.isCorrect = false;
+                }
+            });
+            
+            pageScores[currentPage] = scoreForThisPage;
+            pageAttempted[currentPage] = true;
+            submitPageButton.disabled = true;
+            submitPageButton.textContent = '채점 완료';
+            
+            scoreSectionElement.style.display = 'block';
+            updateScoreDisplay();
+            showMotivationalQuote();
+
+            const quizContainerElement = document.querySelector('.quiz-container');
+            if (quizContainerElement) {
+                quizContainerElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+
+        // ------------------ 팝업 및 초기화 ------------------
+        
+        window.onload = () => {
+            if (welcomePopup) {
+                const popupSessionKey = 'weatherQuizChanT'; 
+                const popupShownThisSession = sessionStorage.getItem(popupSessionKey);
+                if (!popupShownThisSession) {
+                    welcomePopup.classList.add('show');
+                } else {
+                    initializeQuizData();
+                    renderQuestionsForPage(0);
+                }
+            } else {
+                initializeQuizData();
+                renderQuestionsForPage(0);
+            }
+        };
+
+        if (popupConfirmButton) {
+            popupConfirmButton.addEventListener('click', () => {
+                if (popupPasswordInput.value === correctPassword) {
+                    if (welcomePopup) {
+                        welcomePopup.classList.remove('show');
+                    }
+                    const popupSessionKey = 'weatherQuizChanT';
+                    sessionStorage.setItem(popupSessionKey, 'true');
+                    initializeQuizData();
+                    renderQuestionsForPage(0);
+                } else {
+                    if (popupErrorMessage) {
+                        popupErrorMessage.textContent = "비밀번호가 틀렸습니다. 다시 시도해주세요.";
+                    }
+                    popupPasswordInput.value = '';
+                    popupPasswordInput.focus();
+                }
+            });
+        }
+        
+        if (popupPasswordInput) {
+            popupPasswordInput.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    popupConfirmButton.click();
+                }
+            });
+        }
+
+    </script>
+</body>
+</html>
