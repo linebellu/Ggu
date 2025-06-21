@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>찬T의 판 구조론의 정립 과정 퀴즈</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f0f4f8;
+        }
+        .quiz-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 1.5rem;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .question-card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #2d3748;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        .question-text .blank-emphasis {
+            font-weight: bold;
+            color: #3b82f6;
+        }
+        .option-label {
+            display: block;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+            background-color: #f7fafc;
+        }
+        .option-label:hover {
+            background-color: #e2e8f0;
+        }
+        .option-input:checked + .option-label {
+            background-color: #4299e1;
+            color: white;
+            border-color: #2b6cb0;
+        }
+        .feedback {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+        .feedback.correct {
+            background-color: #c6f6d5;
+            color: #2f855a;
+            border: 1px solid #9ae6b4;
+        }
+        .feedback.incorrect {
+            background-color: #fed7d7;
+            color: #c53030;
+            border: 1px solid #fbb6ce;
+        }
+        .explanation {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #4a5568;
+            line-height: 1.5;
+        }
+        .action-button {
+            background-color: #4a5568;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border: none;
+            margin-top: 1rem;
+            margin-right: 0.5rem;
+        }
+        .action-button:hover:not(:disabled) {
+            background-color: #2d3748;
+        }
+        .action-button:disabled {
+            background-color: #a0aec0;
+            cursor: not-allowed;
+        }
+        .pagination-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        .pagination-controls button, .pagination-controls span {
+            margin: 0 0.25rem;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            background-color: #fff;
+            cursor: pointer;
+        }
+        .pagination-controls button:disabled {
+            background-color: #e2e8f0;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .pagination-controls .page-number.current {
+            background-color: #4299e1;
+            color: white;
+            border-color: #2b6cb0;
+            font-weight: bold;
+        }
+        .score-section {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background-color: #e9f5ff;
+            border-radius: 8px;
+            text-align: left;
+        }
+        .score-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #1a202c;
+            margin-bottom: 0.5rem;
+        }
+        .quiz-title-in-score {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #1e40af;
+            margin-bottom: 0.75rem;
+        }
+        .motivational-quote {
+            font-size: 1rem;
+            font-style: italic;
+            color: #374151;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px dashed #cbd5e0;
+            text-align: center;
+        }
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a202c;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .page-info {
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: #4a5568;
+        }
+        .popup-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); display: flex;
+            justify-content: center; align-items: center; z-index: 1000;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        .popup-overlay.show { opacity: 1; visibility: visible; }
+        .popup-content {
+            background-color: white; padding: 2.5rem; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); text-align: center;
+            max-width: 420px; width: 90%;
+        }
+        .popup-content h2 {
+            font-size: 1.75rem; font-weight: 700; color: #1a202c; margin-bottom: 1rem;
+        }
+        .popup-content p.welcome-message {
+            font-size: 1rem; color: #4a5568; margin-bottom: 1.5rem; line-height: 1.6;
+        }
+        .popup-password-input {
+            width: 100%; padding: 0.75rem; margin-bottom: 1rem;
+            border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem;
+            box-sizing: border-box;
+        }
+        .popup-confirm-btn {
+            background-color: #3b82f6; color: white; padding: 0.75rem 1.5rem;
+            border-radius: 8px; font-weight: 500; cursor: pointer;
+            transition: background-color 0.2s; border: none; width: 100%;
+            font-size: 1rem;
+        }
+        .popup-confirm-btn:hover { background-color: #2563eb; }
+        .popup-error-message {
+            color: #ef4444; font-size: 0.875rem; margin-top: 0.75rem;
+            min-height: 1.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="welcome-popup" class="popup-overlay">
+        <div class="popup-content">
+            <h2>찬T의 퀴즈</h2>
+            <p class="welcome-message">비밀번호를 입력해주세요.</p>
+            <input type="password" id="popup-password" class="popup-password-input" placeholder="비밀번호">
+            <button id="popup-confirm" class="popup-confirm-btn">확인</button>
+            <p id="popup-error" class="popup-error-message"></p>
+        </div>
+    </div>
+    <div class="quiz-container">
+        <h1>찬T의 판 구조론의 정립 과정 퀴즈</h1>
+        <div class="page-info" id="page-info"></div>
+        <div id="quiz">
+            </div>
+        <div class="pagination-controls" id="pagination-controls">
+            </div>
+        <button id="submit-page-btn" class="action-button w-full sm:w-auto mx-auto block">이번 페이지 채점하기</button>
+        <div class="score-section" id="score-section" style="display: none;">
+            <p class="score-text quiz-title-in-score" id="quiz-main-title-in-score"></p>
+            <p class="score-text" id="current-page-score-text"></p>
+            <p class="score-text" id="total-score-text"></p>
+            <p class="motivational-quote" id="motivational-quote" style="display: none;"></p>
+        </div>
+    </div>
+
+    <script>
+        // ------------------ 문제 데이터 (총 30문제) ------------------
+        const questions = [
+            {
+                id: 1,
+                type: 'fill-in',
+                text: "1912년 베게너가 주장한, 과거의 모든 대륙이 '판게아'라는 하나의 초대륙을 이루었다가 분리 및 이동했다는 학설은 [BLANK]이다.",
+                answer: "대륙 이동설",
+                options: ["맨틀 대류설", "해저 확장설", "판 구조론", "대륙 이동설"],
+                explanation: "대륙 이동설은 베게너가 여러 증거를 바탕으로 제안한 이론으로, 현재의 판 구조론이 정립되는 시초가 되었습니다."
+            },
+            {
+                id: 2,
+                type: 'fill-in',
+                text: "대륙 이동설의 증거가 아닌 것은?",
+                answer: "해령의 발견",
+                options: ["해안선 모양의 유사성", "화석 분포의 연속성", "빙하의 흔적 분포", "해령의 발견"],
+                explanation: "해령의 발견은 음향 측심법이 발달한 20세기 중반의 일로, 베게너 시대에는 알 수 없었습니다. 해령은 이후 등장한 해저 확장설의 중요한 증거가 됩니다."
+            },
+            {
+                id: 3,
+                type: 'ox',
+                text: "현재 멀리 떨어진 남아메리카와 아프리카 대륙에서 같은 종의 육상 고생물 화석이 발견되는 것은 대륙 이동설의 증거가 된다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 육상 생물은 바다를 건널 수 없으므로, 과거에 두 대륙이 붙어 있었다는 강력한 증거입니다. (예: 메소사우루스, 리스트로사우루스)"
+            },
+            {
+                id: 4,
+                type: 'fill-in',
+                text: "북아메리카의 애팔래치아 산맥과 유럽의 칼레도니아 산맥의 지질 구조가 연속적으로 나타나는 것은 대륙 이동설의 증거 중 [BLANK]에 해당한다.",
+                answer: "지질 구조의 연속성",
+                options: ["해안선 모양의 유사성", "화석 분포의 연속성", "지질 구조의 연속성", "빙하 흔적의 분포"],
+                explanation: "두 산맥을 붙여보면 하나의 산맥처럼 자연스럽게 연결되며, 암석의 종류와 지질 구조가 매우 유사하여 과거에 하나의 산맥이었음을 시사합니다."
+            },
+            {
+                id: 5,
+                type: 'fill-in',
+                text: "베게너의 대륙 이동설이 발표 당시에 학계에서 받아들여지지 못한 가장 큰 이유는 무엇인가?",
+                answer: "대륙 이동의 원동력을 설명하지 못해서",
+                options: ["증거가 부족해서", "관측 기술이 미흡해서", "전쟁 때문이어서", "대륙 이동의 원동력을 설명하지 못해서"],
+                explanation: "베게너는 여러 강력한 증거를 제시했지만, 거대한 대륙을 움직이는 힘이 무엇인지 설명하지 못했기 때문에 당시 과학자들에게 인정받지 못했습니다."
+            },
+            {
+                id: 6,
+                type: 'fill-in',
+                text: "1920년대 후반, 홈스가 대륙 이동의 원동력으로 제시한 이론으로 맨틀 내부의 열적 불균형에 의한 대류 현상을 주장한 것은 [BLANK]이다.",
+                answer: "맨틀 대류설",
+                options: ["대륙 이동설", "해저 확장설", "판 구조론", "맨틀 대류설"],
+                explanation: "홈스는 맨틀 상하부의 온도 차이로 인해 맨틀이 대류하며 그 위의 대륙을 이동시킨다고 주장하여 대륙 이동의 원동력을 처음으로 설명하고자 했습니다."
+            },
+            {
+                id: 7,
+                type: 'fill-in',
+                text: "맨틀 대류설에 따르면, 맨틀 대류의 [BLANK]에서는 장력이 작용하여 새로운 지각이 생성된다.",
+                answer: "상승부",
+                options: ["상승부", "하강부", "경계부", "중심부"],
+                explanation: "뜨거운 맨틀 물질이 올라오는 상승부에서는 양쪽으로 잡아당기는 힘인 장력이 작용하여 지각이 갈라지고 새로운 해양 지각이 형성된다고 설명했습니다."
+            },
+            {
+                id: 8,
+                type: 'ox',
+                text: "홈스의 맨틀 대류설은 당시 관측 기술의 한계로 맨틀 대류의 증거를 제시하지 못했다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 맨틀 대류설은 논리적으로는 타당했지만, 당시 기술로는 맨틀 내부를 탐사하여 대류 현상을 직접 확인할 방법이 없어 가설로만 남게 되었습니다."
+            },
+            {
+                id: 9,
+                type: 'fill-in',
+                text: "해저 지형을 탐사하는 데 사용된, 음파가 해저면에 반사되어 되돌아오는 시간을 측정하여 수심을 알아내는 방법은 [BLANK]이다.",
+                answer: "음향 측심법",
+                options: ["레이더 탐사", "시추", "위성 고도계", "음향 측심법"],
+                explanation: "수심(d) = 1/2 × 음파의 속도(v) × 왕복 시간(t) 공식을 이용하여 해저 지형을 측정하는 음향 측심법의 발달로 해저의 상세한 지형이 밝혀졌습니다."
+            },
+            {
+                id: 10,
+                type: 'fill-in',
+                text: "음향 측심법으로 측정한 음파의 왕복 시간이 길수록 그 지점의 수심은 [BLANK].",
+                answer: "깊다",
+                options: ["얕다", "깊다", "변함없다", "알 수 없다"],
+                explanation: "음파가 해저면까지 갔다 오는 데 시간이 오래 걸릴수록, 그만큼 이동한 거리가 길다는 의미이므로 수심이 깊습니다."
+            },
+            {
+                id: 11,
+                type: 'fill-in',
+                text: "깊은 바다에 발달한 거대한 해저 산맥으로, 중앙에 V자 모양의 열곡이 발달한 지형은 무엇인가?",
+                answer: "해령",
+                options: ["해구", "해령", "대륙붕", "심해 평원"],
+                explanation: "해령은 맨틀 대류의 상승부에 해당하며, 새로운 해양 지각이 생성되는 곳입니다."
+            },
+            {
+                id: 12,
+                type: 'fill-in',
+                text: "수심이 6km 이상으로 매우 깊고 좁은 골짜기 모양의 지형으로, 판이 소멸하는 곳에 발달하는 것은 [BLANK]이다.",
+                answer: "해구",
+                options: ["해구", "해령", "대륙사면", "평정해산"],
+                explanation: "해구는 해양판이 다른 판 밑으로 섭입하면서 만들어지는 지형으로, 판 구조론에서 판이 소멸하는 경계입니다."
+            },
+            {
+                id: 13,
+                type: 'fill-in',
+                text: "해령에서 새로운 해양 지각이 생성되어 양쪽으로 확장된다는 [BLANK]은/는 헤스와 디츠가 주장했다.",
+                answer: "해양저 확장설",
+                options: ["대륙 이동설", "맨틀 대류설", "해양저 확장설", "판 구조론"],
+                explanation: "해양저 확장설은 해저 지형 탐사 결과를 바탕으로, 해령에서 새로운 해저가 만들어지고 해구에서 오래된 해저가 사라진다고 설명한 이론입니다."
+            },
+            {
+                id: 14,
+                type: 'fill-in',
+                text: "해양저 확장설의 강력한 증거로, 해령을 축으로 고지자기 줄무늬가 [BLANK]으로 나타나는 현상이 있다.",
+                answer: "대칭적",
+                options: ["무작위적", "비대칭적", "대칭적", "나선형"],
+                explanation: "지구 자기장이 역전될 때마다 해령에서 생성되는 암석의 잔류 자기가 기록되고, 이것이 양쪽으로 퍼져나가면서 해령을 중심으로 대칭적인 줄무늬 패턴을 만듭니다."
+            },
+            {
+                id: 15,
+                type: 'ox',
+                text: "암석에 남아있는 고지자기의 방향은 현재의 지구 자기장 방향이 바뀌면 함께 변한다.",
+                answer: "X",
+                options: ["O", "X"],
+                explanation: "아닙니다. 고지자기는 암석이 생성될 당시의 지구 자기장 방향을 기록한 채로 굳어진 것이므로, 현재의 자기장 방향이 바뀌어도 변하지 않습니다."
+            },
+            {
+                id: 16,
+                type: 'fill-in',
+                text: "해양 시추 결과, 해령에서 멀어질수록 해양 지각의 나이는 [BLANK].",
+                answer: "많아진다",
+                options: ["젊어진다", "많아진다", "변하지 않는다", "알 수 없다"],
+                explanation: "새로운 해양 지각이 해령에서 생성되어 양쪽으로 이동하므로, 해령에서 멀리 떨어진 곳일수록 더 오래전에 생성된 나이가 많은 지각입니다."
+            },
+            {
+                id: 17,
+                type: 'fill-in',
+                text: "해령에서 멀어질수록 해저 퇴적물의 두께는 어떻게 변하는가?",
+                answer: "두꺼워진다",
+                options: ["얇아진다", "두꺼워진다", "변하지 않는다", "일정하다"],
+                explanation: "해령에서 멀수록 해양 지각의 나이가 많아, 그 위에 퇴적물이 쌓일 시간이 더 길었기 때문에 퇴적물의 두께도 두꺼워집니다."
+            },
+            {
+                id: 18,
+                type: 'fill-in',
+                text: "해구에서 대륙 쪽으로 갈수록 지진의 진원 깊이가 점점 [BLANK]지는 현상은 판의 섭입 증거가 된다.",
+                answer: "깊어",
+                options: ["얕아", "깊어", "일정해", "불규칙해"],
+                explanation: "이는 해양판이 대륙판 밑으로 비스듬히 미끄러져 들어가면서(섭입하면서) 마찰에 의해 지진을 일으키기 때문입니다. 이 지진 발생대를 베니오프대라고 합니다."
+            },
+            {
+                id: 19,
+                type: 'fill-in',
+                text: "해령과 해령 사이를 연결하며, 두 판이 서로 반대 방향으로 어긋나는 경계는 [BLANK]이다.",
+                answer: "변환 단층",
+                options: ["섭입대", "해구", "열곡", "변환 단층"],
+                explanation: "변환 단층은 해양 지각의 확장 속도 차이로 인해 해령 축이 끊어지면서 형성되며, 이 구간에서는 천발 지진이 활발하게 발생합니다."
+            },
+            {
+                id: 20,
+                type: 'fill-in',
+                text: "지구의 표면이 10여 개의 단단한 판으로 이루어져 있고, 이 판들의 상대적인 운동으로 지각 변동이 일어난다는 이론은 [BLANK]이다.",
+                answer: "판 구조론",
+                options: ["대륙 이동설", "맨틀 대류설", "해저 확장설", "판 구조론"],
+                explanation: "판 구조론은 대륙 이동설, 맨틀 대류설, 해저 확장설 등의 여러 증거와 이론들을 통합하여 정립된 현대 지구과학의 핵심 이론입니다."
+            },
+            {
+                id: 21,
+                type: 'fill-in',
+                text: "판 구조론에서 '판'이 의미하는 범위는 지각과 [BLANK]의 일부를 포함하는 단단한 암석권이다.",
+                answer: "상부 맨틀",
+                options: ["하부 맨틀", "외핵", "상부 맨틀", "내핵"],
+                explanation: "판은 지각만을 의미하는 것이 아니라, 지각과 그 바로 아래의 단단한 상부 맨틀을 포함하는 약 100km 두께의 암석권을 말합니다."
+            },
+            {
+                id: 22,
+                type: 'fill-in',
+                text: "판 아래에 위치하며 맨틀 물질이 부분 용융되어 유동성을 가지는 층으로, 맨틀 대류가 일어나 판을 움직이게 하는 층은 [BLANK]이다.",
+                answer: "연약권",
+                options: ["암석권", "지각", "연약권", "중간권"],
+                explanation: "연약권은 깊이 약 100~400km 구간으로, 유동성이 있어 그 위에 놓인 단단한 판(암석권)이 움직일 수 있게 합니다."
+            },
+            {
+                id: 23,
+                type: 'ox',
+                text: "대륙판은 해양판보다 두께는 두껍지만 평균 밀도는 작다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 대륙판은 주로 화강암질 암석으로 이루어져 두껍지만 밀도가 작고, 해양판은 현무암질 암석으로 이루어져 얇지만 밀도가 큽니다."
+            },
+            {
+                id: 24,
+                type: 'fill-in',
+                text: "판 구조론이 정립되는 과정에서 등장한 이론들을 시간 순서대로 바르게 나열한 것은?",
+                answer: "대륙 이동설 → 맨틀 대류설 → 해저 확장설",
+                options: [
+                    "맨틀 대류설 → 대륙 이동설 → 해저 확장설",
+                    "해저 확장설 → 대륙 이동설 → 맨틀 대류설",
+                    "대륙 이동설 → 맨틀 대류설 → 해저 확장설",
+                    "대륙 이동설 → 해저 확장설 → 맨틀 대류설"
+                ],
+                explanation: "베게너의 대륙 이동설(1912) → 홈스의 맨틀 대류설(1920년대) → 헤스와 디츠의 해저 확장설(1962) 순서로 이론이 발전하며 판 구조론의 기틀을 마련했습니다."
+            },
+            {
+                id: 25,
+                type: 'fill-in',
+                text: "고생대 말 한 덩어리로 모여 있던 초대륙의 이름은 [BLANK]이다.",
+                answer: "판게아",
+                options: ["로디니아", "판게아", "곤드와나", "로라시아"],
+                explanation: "베게너는 여러 증거를 바탕으로 과거에 모든 대륙이 하나로 뭉쳐진 초대륙 '판게아'가 존재했다고 주장했습니다."
+            },
+            {
+                id: 26,
+                type: 'ox',
+                text: "해령 중앙의 V자형 골짜기인 열곡에서는 주로 심발 지진이 발생한다.",
+                answer: "X",
+                options: ["O", "X"],
+                explanation: "아닙니다. 열곡은 지각이 얕은 곳에서 갈라지는 곳이므로, 주로 천발 지진이 발생합니다. 심발 지진은 섭입대에서 발생합니다."
+            },
+            {
+                id: 27,
+                type: 'fill-in',
+                text: "해구에서 대륙 쪽으로 갈수록 깊어지는 진원의 분포대를 무엇이라고 하는가?",
+                answer: "베니오프대",
+                options: ["모호면", "구텐베르크면", "플룸", "베니오프대"],
+                explanation: "베니오프대는 섭입하는 해양판의 경계를 따라 지진이 발생하는 지역을 의미하며, 판의 섭입을 보여주는 명확한 증거입니다."
+            },
+            {
+                id: 28,
+                type: 'fill-in',
+                text: "맨틀 대류의 에너지원은 지구 중심의 열과 [BLANK]의 붕괴열이다.",
+                answer: "맨틀 속 방사성 원소",
+                options: ["태양 복사 에너지", "달의 인력", "맨틀 속 방사성 원소", "지구 자기장"],
+                explanation: "맨틀 내부에 포함된 우라늄, 토륨, 칼륨 등 방사성 원소가 붕괴하면서 발생하는 열이 지구 내부의 열과 함께 맨틀 대류를 일으키는 주된 에너지원으로 여겨집니다."
+            },
+            {
+                id: 29,
+                type: 'ox',
+                text: "현재 대서양은 중앙에 해령이 발달하여 계속 넓어지고 있고, 태평양은 가장자리에 해구가 많아 좁아지고 있다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 대서양 중앙 해령에서는 해양 지각이 계속 생성되고 있지만, 태평양은 주변부에 섭입대가 많아 생성되는 양보다 소멸되는 양이 더 많아 점차 좁아지고 있습니다."
+            },
+            {
+                id: 30,
+                type: 'fill-in',
+                text: "판 구조론에 따르면, 지각 변동은 주로 어디에서 활발하게 일어나는가?",
+                answer: "판의 경계",
+                options: ["판의 중심부", "대륙의 중심부", "판의 경계", "해양의 중심부"],
+                explanation: "판 구조론은 지진, 화산 활동과 같은 대부분의 지각 변동이 판과 판이 서로 만나거나 멀어지거나 스쳐 지나가는 '판의 경계'에서 집중적으로 일어난다고 설명합니다."
+            }
+        ];
+
+        // ------------------ 명언 목록 ------------------
+        const motivationalQuotes = [
+            "오늘의 노력이 내일의 너를 만든다.", "포기하지 않는 한, 실패는 없다.", "가장 큰 위험은 아무 위험도 감수하지 않는 것이다.",
+            "배움은 의무도, 생존도 아니다. 그것은 우리의 가장 큰 특권이다.", "성공은 최종 목적지가 아니며, 실패는 치명적이지 않다. 중요한 것은 계속 나아가는 용기다.",
+            "작은 성공들이 모여 큰 성공을 이룬다.", "어제보다 나은 오늘, 오늘보다 나은 내일을 만들자.",
+            "가장 큰 영광은 한 번도 실패하지 않음이 아니라 실패할 때마다 다시 일어서는 데에 있다.", "천리길도 한 걸음부터.", "노력은 결코 배신하지 않는다."
+        ];
+
+        // ------------------ DOM 요소 ------------------
+        const quizElement = document.getElementById('quiz');
+        const paginationControlsElement = document.getElementById('pagination-controls');
+        const submitPageButton = document.getElementById('submit-page-btn');
+        const scoreSectionElement = document.getElementById('score-section');
+        const currentPageScoreTextElement = document.getElementById('current-page-score-text');
+        const totalScoreTextElement = document.getElementById('total-score-text');
+        const pageInfoElement = document.getElementById('page-info');
+        const quizMainTitleDisplayElement = document.getElementById('quiz-main-title-in-score');
+        const motivationalQuoteElement = document.getElementById('motivational-quote');
+        
+        const welcomePopup = document.getElementById('welcome-popup');
+        const popupPasswordInput = document.getElementById('popup-password');
+        const popupConfirmButton = document.getElementById('popup-confirm');
+        const popupErrorMessage = document.getElementById('popup-error');
+
+        // ------------------ 퀴즈 설정 ------------------
+        const correctPassword = "chan"; // 비밀번호 설정
+        const questionsPerPage = 5; // 페이지 당 문제 수
+        let currentPage = 0;
+        let pageScores = [];
+        let pageAttempted = [];
+
+        // ------------------ 함수 ------------------
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function initializeQuizData() {
+            questions.forEach(q => {
+                q.userAnswer = null;
+                q.isCorrect = null;
+                q.attemptedThisSession = false;
+                if (q.options) {
+                   shuffleArray(q.options);
+                }
+            });
+            const numPages = Math.ceil(questions.length / questionsPerPage);
+            pageAttempted = new Array(numPages).fill(false);
+            pageScores = new Array(numPages).fill(0);
+        }
+
+        function renderQuestionsForPage(page) {
+            quizElement.innerHTML = '';
+            currentPage = page;
+
+            const start = page * questionsPerPage;
+            const end = Math.min(start + questionsPerPage, questions.length);
+            const questionsOnPage = questions.slice(start, end);
+
+            pageInfoElement.textContent = `총 ${questions.length}문제 중 ${start + 1} - ${end}번 문제`;
+
+            questionsOnPage.forEach((q, indexOnPage) => {
+                const questionCard = document.createElement('div');
+                questionCard.classList.add('question-card');
+                questionCard.id = `question-${q.id}`;
+
+                const questionText = document.createElement('p');
+                questionText.classList.add('question-text');
+                let processedText = q.text.replace(/\[BLANK\]/g, '<span class="blank-emphasis">( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</span>');
+                questionText.innerHTML = `${q.id}. ${processedText}`;
+                
+                questionCard.appendChild(questionText);
+
+                const optionsContainer = document.createElement('div');
+                optionsContainer.classList.add('options');
+
+                q.options.forEach((option, index) => {
+                    const optionId = `q${q.id}-option-${index}`;
+                    
+                    const radioInput = document.createElement('input');
+                    radioInput.type = 'radio';
+                    radioInput.id = optionId;
+                    radioInput.name = `question-${q.id}`;
+                    radioInput.value = option;
+                    radioInput.classList.add('option-input', 'hidden');
+                    if (q.userAnswer === option) radioInput.checked = true;
+                    if (pageAttempted[currentPage]) radioInput.disabled = true;
+
+                    const optionLabel = document.createElement('label');
+                    optionLabel.htmlFor = optionId;
+                    optionLabel.textContent = option;
+                    optionLabel.classList.add('option-label');
+                    if (pageAttempted[currentPage]) optionLabel.classList.add('opacity-70', 'cursor-not-allowed');
+
+                    optionsContainer.appendChild(radioInput);
+                    optionsContainer.appendChild(optionLabel);
+                });
+                questionCard.appendChild(optionsContainer);
+
+                const feedbackElement = document.createElement('div');
+                feedbackElement.classList.add('feedback');
+                feedbackElement.style.display = 'none';
+                questionCard.appendChild(feedbackElement);
+                
+                if (pageAttempted[currentPage] && q.attemptedThisSession) {
+                    showFeedbackForQuestion(q, questionCard);
+                }
+                quizElement.appendChild(questionCard);
+            });
+
+            if (window.MathJax) {
+                MathJax.typesetPromise([quizElement]).catch((err) => console.log('MathJax typeset failed: ' + err.message));
+            }
+
+            const numPages = Math.ceil(questions.length / questionsPerPage);
+            if (numPages > 1) {
+                paginationControlsElement.style.display = 'flex';
+                renderPaginationControls();
+            } else {
+                paginationControlsElement.style.display = 'none';
+            }
+
+            submitPageButton.disabled = pageAttempted[currentPage];
+            if (pageAttempted[currentPage]) {
+                submitPageButton.textContent = '채점 완료';
+                scoreSectionElement.style.display = 'block';
+                updateScoreDisplay();
+                showMotivationalQuote();
+            } else {
+                submitPageButton.textContent = '이번 페이지 채점하기';
+                motivationalQuoteElement.style.display = 'none';
+                if (questionsOnPage.length > 0) {
+                    scoreSectionElement.style.display = 'none';
+                }
+            }
+        }
+        
+        function showFeedbackForQuestion(question, questionCard) {
+            const feedbackElement = questionCard.querySelector('.feedback');
+            if (!feedbackElement) return;
+
+            feedbackElement.innerHTML = '';
+            
+            if (question.isCorrect) {
+                feedbackElement.innerHTML = '<strong class="font-semibold">정답입니다!</strong> 🎉';
+                feedbackElement.className = 'feedback correct';
+            } else {
+                feedbackElement.innerHTML = `<strong class="font-semibold">오답입니다.</strong> 정답은 "<span class="font-bold text-red-700">${question.answer}</span>"입니다.`;
+                feedbackElement.className = 'feedback incorrect';
+            }
+
+            const explanationElement = document.createElement('p');
+            explanationElement.classList.add('explanation');
+            explanationElement.innerHTML = `<strong class="font-semibold">해설:</strong> ${question.explanation}`;
+            feedbackElement.appendChild(explanationElement);
+            feedbackElement.style.display = 'block';
+
+            if (window.MathJax) {
+                MathJax.typesetPromise([feedbackElement]).catch((err) => console.log('MathJax typeset failed: ' + err.message));
+            }
+        }
+
+        function renderPaginationControls() {
+            paginationControlsElement.innerHTML = '';
+            const numPages = Math.ceil(questions.length / questionsPerPage);
+
+            const prevButton = document.createElement('button');
+            prevButton.textContent = '이전';
+            prevButton.disabled = currentPage === 0;
+            prevButton.onclick = () => renderQuestionsForPage(currentPage - 1);
+            paginationControlsElement.appendChild(prevButton);
+
+            for (let i = 0; i < numPages; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i + 1;
+                pageButton.classList.add('page-number');
+                if (i === currentPage) {
+                    pageButton.classList.add('current');
+                }
+                pageButton.onclick = () => renderQuestionsForPage(i);
+                paginationControlsElement.appendChild(pageButton);
+            }
+
+            const nextButton = document.createElement('button');
+            nextButton.textContent = '다음';
+            nextButton.disabled = currentPage === numPages - 1;
+            nextButton.onclick = () => renderQuestionsForPage(currentPage + 1);
+            paginationControlsElement.appendChild(nextButton);
+        }
+
+        function showMotivationalQuote() {
+            const randomIndex = Math.floor(Math.random() * motivationalQuotes.length);
+            motivationalQuoteElement.textContent = motivationalQuotes[randomIndex];
+            motivationalQuoteElement.style.display = 'block';
+        }
+
+        function updateScoreDisplay() {
+            const questionsOnThisPageCount = Math.min(questionsPerPage, questions.length - (currentPage * questionsPerPage));
+            currentPageScoreTextElement.textContent = `이번 페이지 점수: ${pageScores[currentPage]} / ${questionsOnThisPageCount}`;
+            
+            let currentTotalScore = 0;
+            let currentTotalAttemptedQuestions = 0;
+            for(let i=0; i < pageAttempted.length; i++){
+                if(pageAttempted[i]){
+                    const start = i * questionsPerPage;
+                    const end = Math.min(start + questionsPerPage, questions.length);
+                    currentTotalAttemptedQuestions += (end-start);
+                    currentTotalScore += pageScores[i];
+                }
+            }
+
+            const quizTitleElement = document.querySelector('h1');
+            quizMainTitleDisplayElement.textContent = quizTitleElement.textContent;
+
+            if (currentTotalAttemptedQuestions > 0) {
+                totalScoreTextElement.style.display = 'block';
+                totalScoreTextElement.textContent = `총 누적 점수: ${currentTotalScore} / ${currentTotalAttemptedQuestions}`;
+            } else {
+                totalScoreTextElement.style.display = 'none';
+            }
+        }
+        
+        // ------------------ 이벤트 리스너 ------------------
+
+        submitPageButton.addEventListener('click', () => {
+            if (pageAttempted[currentPage]) return;
+
+            let scoreForThisPage = 0;
+            
+            const start = currentPage * questionsPerPage;
+            const end = Math.min(start + questionsPerPage, questions.length);
+            const questionsOnPage = questions.slice(start, end);
+
+            questionsOnPage.forEach((q, indexOnPage) => {
+                const questionCard = quizElement.children[indexOnPage];
+                const selectedOptionInput = questionCard.querySelector(`input[name="question-${q.id}"]:checked`);
+                
+                q.attemptedThisSession = true;
+
+                if (selectedOptionInput) {
+                    q.userAnswer = selectedOptionInput.value;
+                    q.isCorrect = (q.userAnswer === q.answer);
+                    
+                    if (q.isCorrect) {
+                        scoreForThisPage++;
+                    }
+                    showFeedbackForQuestion(q, questionCard);
+
+                    const radioInputs = questionCard.querySelectorAll('input[type="radio"]');
+                    radioInputs.forEach(input => input.disabled = true);
+                } else {
+                    const feedbackElement = questionCard.querySelector('.feedback');
+                    feedbackElement.textContent = '답을 선택하지 않았습니다.';
+                    feedbackElement.className = 'feedback incorrect';
+                    feedbackElement.style.display = 'block';
+                    q.isCorrect = false;
+                }
+            });
+            
+            pageScores[currentPage] = scoreForThisPage;
+            pageAttempted[currentPage] = true;
+            submitPageButton.disabled = true;
+            submitPageButton.textContent = '채점 완료';
+            
+            scoreSectionElement.style.display = 'block';
+            updateScoreDisplay();
+            showMotivationalQuote();
+
+            const quizContainerElement = document.querySelector('.quiz-container');
+            if (quizContainerElement) {
+                quizContainerElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+
+        // ------------------ 팝업 및 초기화 ------------------
+        
+        window.onload = () => {
+            if (welcomePopup) {
+                const popupSessionKey = 'plateTectonicsQuizChanT'; 
+                const popupShownThisSession = sessionStorage.getItem(popupSessionKey);
+                if (!popupShownThisSession) {
+                    welcomePopup.classList.add('show');
+                } else {
+                    initializeQuizData();
+                    renderQuestionsForPage(0);
+                }
+            } else {
+                initializeQuizData();
+                renderQuestionsForPage(0);
+            }
+        };
+
+        if (popupConfirmButton) {
+            popupConfirmButton.addEventListener('click', () => {
+                if (popupPasswordInput.value === correctPassword) {
+                    if (welcomePopup) {
+                        welcomePopup.classList.remove('show');
+                    }
+                    const popupSessionKey = 'plateTectonicsQuizChanT';
+                    sessionStorage.setItem(popupSessionKey, 'true');
+                    initializeQuizData();
+                    renderQuestionsForPage(0);
+                } else {
+                    if (popupErrorMessage) {
+                        popupErrorMessage.textContent = "비밀번호가 틀렸습니다. 다시 시도해주세요.";
+                    }
+                    popupPasswordInput.value = '';
+                    popupPasswordInput.focus();
+                }
+            });
+        }
+        
+        if (popupPasswordInput) {
+            popupPasswordInput.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    popupConfirmButton.click();
+                }
+            });
+        }
+
+    </script>
+</body>
+</html>
