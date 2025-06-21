@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>찬T의 지층의 나이 퀴즈</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f0f4f8;
+        }
+        .quiz-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 1.5rem;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .question-card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #2d3748;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        .question-text .blank-emphasis {
+            font-weight: bold;
+            color: #3b82f6;
+        }
+        .option-label {
+            display: block;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+            background-color: #f7fafc;
+        }
+        .option-label:hover {
+            background-color: #e2e8f0;
+        }
+        .option-input:checked + .option-label {
+            background-color: #4299e1;
+            color: white;
+            border-color: #2b6cb0;
+        }
+        .feedback {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+        .feedback.correct {
+            background-color: #c6f6d5;
+            color: #2f855a;
+            border: 1px solid #9ae6b4;
+        }
+        .feedback.incorrect {
+            background-color: #fed7d7;
+            color: #c53030;
+            border: 1px solid #fbb6ce;
+        }
+        .explanation {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #4a5568;
+            line-height: 1.5;
+        }
+        .action-button {
+            background-color: #4a5568;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border: none;
+            margin-top: 1rem;
+            margin-right: 0.5rem;
+        }
+        .action-button:hover:not(:disabled) {
+            background-color: #2d3748;
+        }
+        .action-button:disabled {
+            background-color: #a0aec0;
+            cursor: not-allowed;
+        }
+        .pagination-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        .pagination-controls button, .pagination-controls span {
+            margin: 0 0.25rem;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            background-color: #fff;
+            cursor: pointer;
+        }
+        .pagination-controls button:disabled {
+            background-color: #e2e8f0;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .pagination-controls .page-number.current {
+            background-color: #4299e1;
+            color: white;
+            border-color: #2b6cb0;
+            font-weight: bold;
+        }
+        .score-section {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background-color: #e9f5ff;
+            border-radius: 8px;
+            text-align: left;
+        }
+        .score-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #1a202c;
+            margin-bottom: 0.5rem;
+        }
+        .quiz-title-in-score {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #1e40af;
+            margin-bottom: 0.75rem;
+        }
+        .motivational-quote {
+            font-size: 1rem;
+            font-style: italic;
+            color: #374151;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px dashed #cbd5e0;
+            text-align: center;
+        }
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a202c;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .page-info {
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: #4a5568;
+        }
+        .popup-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); display: flex;
+            justify-content: center; align-items: center; z-index: 1000;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        .popup-overlay.show { opacity: 1; visibility: visible; }
+        .popup-content {
+            background-color: white; padding: 2.5rem; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); text-align: center;
+            max-width: 420px; width: 90%;
+        }
+        .popup-content h2 {
+            font-size: 1.75rem; font-weight: 700; color: #1a202c; margin-bottom: 1rem;
+        }
+        .popup-content p.welcome-message {
+            font-size: 1rem; color: #4a5568; margin-bottom: 1.5rem; line-height: 1.6;
+        }
+        .popup-password-input {
+            width: 100%; padding: 0.75rem; margin-bottom: 1rem;
+            border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem;
+            box-sizing: border-box;
+        }
+        .popup-confirm-btn {
+            background-color: #3b82f6; color: white; padding: 0.75rem 1.5rem;
+            border-radius: 8px; font-weight: 500; cursor: pointer;
+            transition: background-color 0.2s; border: none; width: 100%;
+            font-size: 1rem;
+        }
+        .popup-confirm-btn:hover { background-color: #2563eb; }
+        .popup-error-message {
+            color: #ef4444; font-size: 0.875rem; margin-top: 0.75rem;
+            min-height: 1.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="welcome-popup" class="popup-overlay">
+        <div class="popup-content">
+            <h2>찬T의 퀴즈</h2>
+            <p class="welcome-message">비밀번호를 입력해주세요.</p>
+            <input type="password" id="popup-password" class="popup-password-input" placeholder="비밀번호">
+            <button id="popup-confirm" class="popup-confirm-btn">확인</button>
+            <p id="popup-error" class="popup-error-message"></p>
+        </div>
+    </div>
+    <div class="quiz-container">
+        <h1>찬T의 지층의 나이 퀴즈</h1>
+        <div class="page-info" id="page-info"></div>
+        <div id="quiz">
+            </div>
+        <div class="pagination-controls" id="pagination-controls">
+            </div>
+        <button id="submit-page-btn" class="action-button w-full sm:w-auto mx-auto block">이번 페이지 채점하기</button>
+        <div class="score-section" id="score-section" style="display: none;">
+            <p class="score-text quiz-title-in-score" id="quiz-main-title-in-score"></p>
+            <p class="score-text" id="current-page-score-text"></p>
+            <p class="score-text" id="total-score-text"></p>
+            <p class="motivational-quote" id="motivational-quote" style="display: none;"></p>
+        </div>
+    </div>
+
+    <script>
+        // ------------------ 문제 데이터 (총 30문제) ------------------
+        const questions = [
+            {
+                id: 1,
+                type: 'fill-in',
+                text: "지층이나 암석이 생성된 순서를 상대적으로 비교하여 결정하는 나이를 [BLANK] (이)라고 한다.",
+                answer: "상대 연령",
+                options: ["절대 연령", "상대 연령", "방사성 연령", "표준 연령"],
+                explanation: "상대 연령은 지사학의 여러 법칙을 이용하여 어느 지층이 먼저 생기고 나중에 생겼는지를 따지는 것으로, 정확한 수치를 알지는 못합니다."
+            },
+            {
+                id: 2,
+                type: 'fill-in',
+                text: "지층이 중단 없이 차곡차곡 쌓였을 때, 아래에 있는 지층이 위에 있는 지층보다 먼저 생성되었다는 법칙은 [BLANK]이다.",
+                answer: "지층 누중의 법칙",
+                options: ["관입의 법칙", "동물군 천이의 법칙", "지층 누중의 법칙", "수평 퇴적의 법칙"],
+                explanation: "지층 누중의 법칙은 지층의 선후 관계를 파악하는 가장 기본적이고 중요한 원리입니다. 단, 지층의 역전이 없었을 경우에만 적용됩니다."
+            },
+            {
+                id: 3,
+                type: 'fill-in',
+                text: "어떤 지층을 다른 암석(관입암)이 뚫고 들어왔다면, 뚫고 들어온 관입암이 더 나중에 생성되었다는 법칙은 [BLANK]이다.",
+                answer: "관입의 법칙",
+                options: ["관입의 법칙", "부정합의 법칙", "지층 누중의 법칙", "동물군 천이의 법칙"],
+                explanation: "관입의 법칙은 기존의 암석이 있어야만 마그마가 뚫고 들어올 수 있다는 상식적인 원리에 기반합니다. 따라서 관입한 암석은 주변 암석보다 젊습니다."
+            },
+            {
+                id: 4,
+                type: 'ox',
+                text: "오랜 시간 퇴적이 중단되거나 침식을 받은 후 다시 퇴적이 시작된 경계면을 '정합'이라고 한다.",
+                answer: "X",
+                options: ["O", "X"],
+                explanation: "아닙니다. 큰 시간적 단절이 있는 경계면을 '부정합'이라고 합니다. '정합'은 퇴적이 중단 없이 연속적으로 일어난 관계를 말합니다."
+            },
+            {
+                id: 5,
+                type: 'fill-in',
+                text: "지층의 시대를 알려주는 화석으로, 생존 기간이 짧고 분포 면적이 넓어야 좋은 조건을 갖춘 화석은 [BLANK]이다.",
+                answer: "표준 화석",
+                options: ["시상 화석", "표준 화석", "미화석", "유공충"],
+                explanation: "표준 화석은 특정 시대에만 '짧고' '넓게' 살았던 생물의 화석이어야, 그 화석이 발견된 지층의 시대를 명확하게 알려줄 수 있습니다."
+            },
+            {
+                id: 6,
+                type: 'fill-in',
+                text: "퇴적 당시의 환경(기후, 수심 등)을 알려주는 화석으로, 생존 기간이 길고 특정 환경에만 서식해야 좋은 조건을 갖춘 화석은 [BLANK]이다.",
+                answer: "시상 화석",
+                options: ["시상 화석", "표준 화석", "공룡 화석", "암모나이트"],
+                explanation: "시상 화석은 환경 변화에 민감하고 오랫동안 살아온 생물의 화석이어야, 그 화석이 발견된 환경이 어떤 곳이었는지 알려줄 수 있습니다. 예를 들어 산호 화석은 '따뜻하고 얕은 바다' 환경을 지시합니다."
+            },
+            {
+                id: 7,
+                type: 'fill-in',
+                text: "고생대의 대표적인 표준 화석은 [BLANK]이다.",
+                answer: "삼엽충, 필석, 방추충(푸줄리나)",
+                options: ["암모나이트, 공룡", "화폐석, 매머드", "스트로마톨라이트", "삼엽충, 필석, 방추충(푸줄리나)"],
+                explanation: "삼엽충은 고생대 바다를 대표하는 표준 화석입니다. 이 외에도 필석, 갑주어, 방추충 등이 고생대를 대표합니다."
+            },
+            {
+                id: 8,
+                type: 'fill-in',
+                text: "중생대의 대표적인 표준 화석은 [BLANK]이다.",
+                answer: "암모나이트, 공룡",
+                options: ["삼엽충, 완족류", "화폐석, 인류", "암모나이트, 공룡", "스트로마톨라이트"],
+                explanation: "암모나이트는 중생대 바다, 공룡은 중생대 육지를 대표하는 표준 화석입니다."
+            },
+            {
+                id: 9,
+                type: 'fill-in',
+                text: "따뜻하고 얕은 바다 환경을 지시하는 시상 화석은 [BLANK]이다.",
+                answer: "산호",
+                options: ["삼엽충", "고사리", "산호", "암모나이트"],
+                explanation: "산호는 현재도 따뜻하고 얕으며 깨끗한 바다에서만 서식하므로, 산호 화석은 과거에도 비슷한 환경이었음을 알려주는 중요한 시상 화석입니다."
+            },
+            {
+                id: 10,
+                type: 'fill-in',
+                text: "멀리 떨어진 두 지역의 지층을 비교하고 같은 시기의 지층을 찾아내는 작업을 지층의 [BLANK] (이)라고 한다.",
+                answer: "대비",
+                options: ["분류", "해석", "대비", "융합"],
+                explanation: "지층의 대비를 통해 특정 지역의 지질 기록을 전 세계적인 지질 시대와 연결할 수 있습니다."
+            },
+            {
+                id: 11,
+                type: 'fill-in',
+                text: "지층 대비에 매우 유용한, 특정 시기에 넓은 지역에 걸쳐 쌓인 독특한 지층을 [BLANK] (이)라고 한다. (예: 응회암층, 석탄층)",
+                answer: "열쇠층 (건층)",
+                options: ["기저층", "표준층", "열쇠층 (건층)", "부정합층"],
+                explanation: "열쇠층(건층)은 특정 시기에만, 넓은 지역에, 짧은 시간 동안 쌓인 층을 말합니다. 화산 폭발로 생긴 응회암층이 대표적인 예입니다."
+            },
+            {
+                id: 12,
+                type: 'ox',
+                text: "멀리 떨어진 대륙 간의 지층을 대비할 때 가장 효과적인 방법은 암상(암석의 종류)에 의한 대비이다.",
+                answer: "X",
+                options: ["O", "X"],
+                explanation: "아닙니다. 암석의 종류는 지역에 따라 다를 수 있습니다. 멀리 떨어진 지역의 지층을 대비하는 데 가장 효과적인 방법은 같은 시대에 살았던 '표준 화석'을 이용하는 것입니다."
+            },
+            {
+                id: 13,
+                type: 'fill-in',
+                text: "암석의 나이를 수치로 나타낸 것을 [BLANK] (이)라고 하며, 주로 방사성 동위 원소의 붕괴를 이용해 측정한다.",
+                answer: "절대 연령",
+                options: ["상대 연령", "절대 연령", "지질 시대", "반감기"],
+                explanation: "절대 연령은 '몇 년 전'과 같이 구체적인 숫자로 나이를 나타내는 것으로, 방사성 동위 원소의 일정한 붕괴 속도를 이용합니다."
+            },
+            {
+                id: 14,
+                type: 'fill-in',
+                text: "불안정한 방사성 원소(모원소)가 붕괴하여 안정한 원소(자원소)로 변할 때, 처음 모원소의 양이 절반으로 줄어드는 데 걸리는 시간을 [BLANK] (이)라고 한다.",
+                answer: "반감기",
+                options: ["절대 연령", "반감기", "존속 기간", "붕괴율"],
+                explanation: "반감기는 방사성 원소마다 고유한 값을 가지며, 온도나 압력 등 외부 환경의 영향을 받지 않고 항상 일정합니다. 이 성질을 이용해 암석의 나이를 측정합니다."
+            },
+            {
+                id: 15,
+                type: 'fill-in',
+                text: "어떤 암석에 포함된 모원소의 양이 처음의 1/4로 줄었다면, 이 암석은 반감기를 몇 번 거친 것인가?",
+                answer: "2번",
+                options: ["1번", "2번", "3번", "4번"],
+                explanation: "반감기를 1번 거치면 1/2이 남고, 2번 거치면 남은 양의 절반인 1/4이 남게 됩니다. (1/2)² = 1/4"
+            },
+            {
+                id: 16,
+                type: 'ox',
+                text: "어떤 방사성 원소의 반감기가 1억 년이다. 이 원소가 포함된 암석이 생성된 후 2억 년이 지나면, 암석 속 모원소와 자원소의 비율은 1:3이 된다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 2억 년은 반감기(1억 년)를 2번 거친 것입니다. 모원소는 1/4이 남고, 자원소는 3/4이 생성되므로, 모원소:자원소의 비율은 1:3이 됩니다."
+            },
+            {
+                id: 17,
+                type: 'fill-in',
+                text: "방사성 연대 측정법은 주로 어떤 종류의 암석의 생성 시기를 알아내는 데 가장 적합한가?",
+                answer: "화성암",
+                options: ["퇴적암", "화성암", "변성암", "모든 암석"],
+                explanation: "화성암은 마그마가 식어서 광물이 정출될 때 방사성 시계가 '0'으로 맞춰지기 때문에, 암석이 생성된 시기를 가장 정확하게 측정할 수 있습니다."
+            },
+            {
+                id: 18,
+                type: 'ox',
+                text: "퇴적암의 절대 연령은 퇴적암을 구성하는 암석 조각 속 방사성 원소를 측정하면 정확하게 알 수 있다.",
+                answer: "X",
+                options: ["O", "X"],
+                explanation: "아닙니다. 퇴적암 속 암석 조각은 원래 다른 곳에 있던 더 오래된 암석에서 온 것입니다. 따라서 그 조각의 나이를 측정하면 퇴적암이 쌓인 시기가 아니라, 그 조각이 원래 속했던 암석의 나이가 나옵니다."
+            },
+            {
+                id: 19,
+                type: 'fill-in',
+                text: "퇴적암의 나이는 직접 측정하는 대신, 그 위아래에 있는 [BLANK]이나 화산암층의 절대 연령을 측정하여 간접적으로 추정한다.",
+                answer: "관입암",
+                options: ["변성암", "석회암", "관입암", "편마암"],
+                explanation: "예를 들어, 퇴적층을 뚫고 들어온 관입암의 나이가 1억 년이고, 그 퇴적층 위에 쌓인 화산암의 나이가 8천만 년이라면, 그 퇴적층의 나이는 1억 년에서 8천만 년 사이임을 알 수 있습니다."
+            },
+            {
+                id: 20,
+                type: 'fill-in',
+                text: "비교적 젊은 시대의 유물이나 유기물의 연대 측정에 사용되며, 반감기가 약 5,730년인 방사성 동위 원소는 [BLANK]이다.",
+                answer: "탄소-14 (¹⁴C)",
+                options: ["우라늄-238", "칼륨-40", "루비듐-87", "탄소-14 (¹⁴C)"],
+                explanation: "살아있는 생물은 대기로부터 탄소-14를 계속 공급받지만, 죽은 후에는 공급이 끊기고 붕괴만 일어납니다. 이 원리를 이용하여 수만 년 이내의 유기물 연대를 측정합니다."
+            },
+            {
+                id: 21,
+                type: 'ox',
+                text: "지사학의 법칙 중, 관입의 법칙과 부정합의 법칙은 '지층 누중의 법칙'의 예외가 될 수 있다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 아래에 있는 관입암이 위의 지층보다 젊거나(관입), 부정합 관계에서 아래 지층과 위 지층의 나이 차가 매우 클 수 있으므로, 지층 누중의 법칙을 적용할 때는 이들을 함께 고려해야 합니다."
+            },
+            {
+                id: 22,
+                type: 'fill-in',
+                text: "지층의 생성 순서를 정할 때, '부정합'과 '관입' 중 무엇이 먼저 일어났는가?",
+                answer: "알 수 없다 (상황에 따라 다르다)",
+                options: ["항상 부정합이 먼저다", "항상 관입이 먼저다", "알 수 없다 (상황에 따라 다르다)", "동시에 일어난다"],
+                explanation: "관입암이 부정합면에 의해 잘려있다면 관입이 먼저이고, 관입암이 부정합면을 뚫고 있다면 부정합이 먼저입니다. 지질 단면도의 관계를 잘 살펴봐야 합니다."
+            },
+            {
+                id: 23,
+                type: 'fill-in',
+                text: "반감기가 2억 년인 방사성 원소가 포함된 화성암을 분석했더니, 모원소와 자원소의 비율이 1:7 이었다. 이 암석의 절대 연령은?",
+                answer: "6억 년",
+                options: ["2억 년", "4억 년", "6억 년", "8억 년"],
+                explanation: "모원소:자원소 비율이 1:7이면, 남은 모원소는 전체의 1/8입니다. 1/8은 반감기를 3번 거친 것($$(1/2)^3$$)이므로, 나이는 2억 년 × 3 = 6억 년입니다."
+            },
+            {
+                id: 24,
+                type: 'ox',
+                text: "암석 속 방사성 원소의 반감기는 주변의 온도나 압력이 높아지면 더 짧아진다.",
+                answer: "X",
+                options: ["O", "X"],
+                explanation: "아닙니다. 방사성 원소의 반감기는 온도, 압력, 화학 결합 등 외부 조건에 전혀 영향을 받지 않고 항상 일정합니다. 이 불변성 때문에 '절대적인 시계'로 사용할 수 있습니다."
+            },
+            {
+                id: 25,
+                type: 'fill-in',
+                text: "화석으로 발견되지 않는 선캄브리아 시대의 지층 연대 측정에 가장 유용한 방법은?",
+                answer: "절대 연령 측정법 (방사성 동위 원소 이용)",
+                options: ["표준 화석에 의한 대비", "시상 화석에 의한 대비", "절대 연령 측정법 (방사성 동위 원소 이용)", "암상에 의한 대비"],
+                explanation: "화석이 거의 발견되지 않는 선캄브리아 시대의 지층은 화석으로 대비하기 어렵습니다. 따라서 암석 자체에 포함된 방사성 동위 원소를 이용한 절대 연령 측정이 매우 중요합니다."
+            },
+            {
+                id: 26,
+                type: 'fill-in',
+                text: "지층이 수평으로 쌓인다는 법칙은 [BLANK]이다.",
+                answer: "수평 퇴적의 법칙",
+                options: ["동일 과정설", "격변설", "수평 퇴적의 법칙", "관입의 법칙"],
+                explanation: "수평 퇴적의 법칙은 퇴적물이 중력의 영향으로 낮은 곳에 수평으로 쌓인다는 기본 원리입니다. 만약 지층이 기울어져 있다면, 퇴적된 이후에 지각 변동을 받았음을 의미합니다."
+            },
+            {
+                id: 27,
+                type: 'ox',
+                text: "여러 지역에 동시에 화산이 폭발하여 만들어진 응회암층은 좋은 열쇠층(건층)이 될 수 있다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 화산재는 짧은 시간에 매우 넓은 지역에 걸쳐 쌓이므로, 서로 다른 지역에 있는 같은 응회암층은 같은 시기에 형성되었다고 보고 지층 대비의 기준선으로 사용할 수 있습니다."
+            },
+            {
+                id: 28,
+                type: 'fill-in',
+                text: "방사성 동위 원소 X의 반감기는 5천만 년이다. X를 포함한 암석이 생성된 후 1억 년이 지났을 때, 남아있는 X의 양은 처음의 몇 %인가?",
+                answer: "25%",
+                options: ["50%", "25%", "12.5%", "6.25%"],
+                explanation: "1억 년은 반감기(5천만 년)를 2번 거친 시간입니다. 반감기를 1번 거치면 50%가 남고, 2번 거치면 그 절반인 25%가 남습니다."
+            },
+            {
+                id: 29,
+                type: 'fill-in',
+                text: "지층의 생성 순서를 파악하는 상대 연령과, 구체적인 나이를 알려주는 절대 연령을 종합하여 만든 지질학적 시간 척도를 [BLANK] (이)라고 한다.",
+                answer: "지질 시대표",
+                options: ["상대 연령표", "절대 연령표", "지질 시대표", "표준 화석표"],
+                explanation: "지질 시대표는 전 세계의 지층을 대비하고 절대 연령을 측정하여, 지구의 역사를 누대, 대, 기, 세로 나누어 정리한 것입니다."
+            },
+            {
+                id: 30,
+                type: 'fill-in',
+                text: "다음 중 시상 화석으로 가장 적합한 것은?",
+                answer: "고사리",
+                options: ["삼엽충", "암모나이트", "공룡", "고사리"],
+                explanation: "삼엽충, 암모나이트, 공룡은 특정 시대에만 살았던 표준 화석입니다. 반면 고사리는 과거부터 현재까지 특정 환경(따뜻하고 습한 육지)에서 살아오고 있으므로, 환경을 알려주는 시상 화석으로 더 적합합니다."
+            }
+        ];
+
+        // ------------------ 명언 목록 ------------------
+        const motivationalQuotes = [
+            "오늘의 노력이 내일의 너를 만든다.", "포기하지 않는 한, 실패는 없다.", "가장 큰 위험은 아무 위험도 감수하지 않는 것이다.",
+            "배움은 의무도, 생존도 아니다. 그것은 우리의 가장 큰 특권이다.", "성공은 최종 목적지가 아니이며, 실패는 치명적이지 않다. 중요한 것은 계속 나아가는 용기다.",
+            "작은 성공들이 모여 큰 성공을 이룬다.", "어제보다 나은 오늘, 오늘보다 나은 내일을 만들자.",
+            "가장 큰 영광은 한 번도 실패하지 않음이 아니라 실패할 때마다 다시 일어서는 데에 있다.", "천리길도 한 걸음부터.", "노력은 결코 배신하지 않는다."
+        ];
+
+        // ------------------ DOM 요소 ------------------
+        const quizElement = document.getElementById('quiz');
+        const paginationControlsElement = document.getElementById('pagination-controls');
+        const submitPageButton = document.getElementById('submit-page-btn');
+        const scoreSectionElement = document.getElementById('score-section');
+        const currentPageScoreTextElement = document.getElementById('current-page-score-text');
+        const totalScoreTextElement = document.getElementById('total-score-text');
+        const pageInfoElement = document.getElementById('page-info');
+        const quizMainTitleDisplayElement = document.getElementById('quiz-main-title-in-score');
+        const motivationalQuoteElement = document.getElementById('motivational-quote');
+        
+        const welcomePopup = document.getElementById('welcome-popup');
+        const popupPasswordInput = document.getElementById('popup-password');
+        const popupConfirmButton = document.getElementById('popup-confirm');
+        const popupErrorMessage = document.getElementById('popup-error');
+
+        // ------------------ 퀴즈 설정 ------------------
+        const correctPassword = "chan"; // 비밀번호 설정
+        const questionsPerPage = 5; // 페이지 당 문제 수
+        let currentPage = 0;
+        let pageScores = [];
+        let pageAttempted = [];
+
+        // ------------------ 함수 ------------------
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function initializeQuizData() {
+            questions.forEach(q => {
+                q.userAnswer = null;
+                q.isCorrect = null;
+                q.attemptedThisSession = false;
+                if (q.options) {
+                   shuffleArray(q.options);
+                }
+            });
+            const numPages = Math.ceil(questions.length / questionsPerPage);
+            pageAttempted = new Array(numPages).fill(false);
+            pageScores = new Array(numPages).fill(0);
+        }
+
+        function renderQuestionsForPage(page) {
+            quizElement.innerHTML = '';
+            currentPage = page;
+
+            const start = page * questionsPerPage;
+            const end = Math.min(start + questionsPerPage, questions.length);
+            const questionsOnPage = questions.slice(start, end);
+
+            pageInfoElement.textContent = `총 ${questions.length}문제 중 ${start + 1} - ${end}번 문제`;
+
+            questionsOnPage.forEach((q, indexOnPage) => {
+                const questionCard = document.createElement('div');
+                questionCard.classList.add('question-card');
+                questionCard.id = `question-${q.id}`;
+
+                const questionText = document.createElement('p');
+                questionText.classList.add('question-text');
+                let processedText = q.text.replace(/\[BLANK\]/g, '<span class="blank-emphasis">( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</span>');
+                questionText.innerHTML = `${q.id}. ${processedText}`;
+                
+                questionCard.appendChild(questionText);
+
+                const optionsContainer = document.createElement('div');
+                optionsContainer.classList.add('options');
+
+                q.options.forEach((option, index) => {
+                    const optionId = `q${q.id}-option-${index}`;
+                    
+                    const radioInput = document.createElement('input');
+                    radioInput.type = 'radio';
+                    radioInput.id = optionId;
+                    radioInput.name = `question-${q.id}`;
+                    radioInput.value = option;
+                    radioInput.classList.add('option-input', 'hidden');
+                    if (q.userAnswer === option) radioInput.checked = true;
+                    if (pageAttempted[currentPage]) radioInput.disabled = true;
+
+                    const optionLabel = document.createElement('label');
+                    optionLabel.htmlFor = optionId;
+                    optionLabel.textContent = option;
+                    optionLabel.classList.add('option-label');
+                    if (pageAttempted[currentPage]) optionLabel.classList.add('opacity-70', 'cursor-not-allowed');
+
+                    optionsContainer.appendChild(radioInput);
+                    optionsContainer.appendChild(optionLabel);
+                });
+                questionCard.appendChild(optionsContainer);
+
+                const feedbackElement = document.createElement('div');
+                feedbackElement.classList.add('feedback');
+                feedbackElement.style.display = 'none';
+                questionCard.appendChild(feedbackElement);
+                
+                if (pageAttempted[currentPage] && q.attemptedThisSession) {
+                    showFeedbackForQuestion(q, questionCard);
+                }
+                quizElement.appendChild(questionCard);
+            });
+
+            if (window.MathJax) {
+                MathJax.typesetPromise([quizElement]).catch((err) => console.log('MathJax typeset failed: ' + err.message));
+            }
+
+            const numPages = Math.ceil(questions.length / questionsPerPage);
+            if (numPages > 1) {
+                paginationControlsElement.style.display = 'flex';
+                renderPaginationControls();
+            } else {
+                paginationControlsElement.style.display = 'none';
+            }
+
+            submitPageButton.disabled = pageAttempted[currentPage];
+            if (pageAttempted[currentPage]) {
+                submitPageButton.textContent = '채점 완료';
+                scoreSectionElement.style.display = 'block';
+                updateScoreDisplay();
+                showMotivationalQuote();
+            } else {
+                submitPageButton.textContent = '이번 페이지 채점하기';
+                motivationalQuoteElement.style.display = 'none';
+                if (questionsOnPage.length > 0) {
+                    scoreSectionElement.style.display = 'none';
+                }
+            }
+        }
+        
+        function showFeedbackForQuestion(question, questionCard) {
+            const feedbackElement = questionCard.querySelector('.feedback');
+            if (!feedbackElement) return;
+
+            feedbackElement.innerHTML = '';
+            
+            if (question.isCorrect) {
+                feedbackElement.innerHTML = '<strong class="font-semibold">정답입니다!</strong> 🎉';
+                feedbackElement.className = 'feedback correct';
+            } else {
+                feedbackElement.innerHTML = `<strong class="font-semibold">오답입니다.</strong> 정답은 "<span class="font-bold text-red-700">${question.answer}</span>"입니다.`;
+                feedbackElement.className = 'feedback incorrect';
+            }
+
+            const explanationElement = document.createElement('p');
+            explanationElement.classList.add('explanation');
+            explanationElement.innerHTML = `<strong class="font-semibold">해설:</strong> ${question.explanation}`;
+            feedbackElement.appendChild(explanationElement);
+            feedbackElement.style.display = 'block';
+
+            if (window.MathJax) {
+                MathJax.typesetPromise([feedbackElement]).catch((err) => console.log('MathJax typeset failed: ' + err.message));
+            }
+        }
+
+        function renderPaginationControls() {
+            paginationControlsElement.innerHTML = '';
+            const numPages = Math.ceil(questions.length / questionsPerPage);
+
+            const prevButton = document.createElement('button');
+            prevButton.textContent = '이전';
+            prevButton.disabled = currentPage === 0;
+            prevButton.onclick = () => renderQuestionsForPage(currentPage - 1);
+            paginationControlsElement.appendChild(prevButton);
+
+            for (let i = 0; i < numPages; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i + 1;
+                pageButton.classList.add('page-number');
+                if (i === currentPage) {
+                    pageButton.classList.add('current');
+                }
+                pageButton.onclick = () => renderQuestionsForPage(i);
+                paginationControlsElement.appendChild(pageButton);
+            }
+
+            const nextButton = document.createElement('button');
+            nextButton.textContent = '다음';
+            nextButton.disabled = currentPage === numPages - 1;
+            nextButton.onclick = () => renderQuestionsForPage(currentPage + 1);
+            paginationControlsElement.appendChild(nextButton);
+        }
+
+        function showMotivationalQuote() {
+            const randomIndex = Math.floor(Math.random() * motivationalQuotes.length);
+            motivationalQuoteElement.textContent = motivationalQuotes[randomIndex];
+            motivationalQuoteElement.style.display = 'block';
+        }
+
+        function updateScoreDisplay() {
+            const questionsOnThisPageCount = Math.min(questionsPerPage, questions.length - (currentPage * questionsPerPage));
+            currentPageScoreTextElement.textContent = `이번 페이지 점수: ${pageScores[currentPage]} / ${questionsOnThisPageCount}`;
+            
+            let currentTotalScore = 0;
+            let currentTotalAttemptedQuestions = 0;
+            for(let i=0; i < pageAttempted.length; i++){
+                if(pageAttempted[i]){
+                    const start = i * questionsPerPage;
+                    const end = Math.min(start + questionsPerPage, questions.length);
+                    currentTotalAttemptedQuestions += (end-start);
+                    currentTotalScore += pageScores[i];
+                }
+            }
+
+            const quizTitleElement = document.querySelector('h1');
+            quizMainTitleDisplayElement.textContent = quizTitleElement.textContent;
+
+            if (currentTotalAttemptedQuestions > 0) {
+                totalScoreTextElement.style.display = 'block';
+                totalScoreTextElement.textContent = `총 누적 점수: ${currentTotalScore} / ${currentTotalAttemptedQuestions}`;
+            } else {
+                totalScoreTextElement.style.display = 'none';
+            }
+        }
+        
+        // ------------------ 이벤트 리스너 ------------------
+
+        submitPageButton.addEventListener('click', () => {
+            if (pageAttempted[currentPage]) return;
+
+            let scoreForThisPage = 0;
+            
+            const start = currentPage * questionsPerPage;
+            const end = Math.min(start + questionsPerPage, questions.length);
+            const questionsOnPage = questions.slice(start, end);
+
+            questionsOnPage.forEach((q, indexOnPage) => {
+                const questionCard = quizElement.children[indexOnPage];
+                const selectedOptionInput = questionCard.querySelector(`input[name="question-${q.id}"]:checked`);
+                
+                q.attemptedThisSession = true;
+
+                if (selectedOptionInput) {
+                    q.userAnswer = selectedOptionInput.value;
+                    q.isCorrect = (q.userAnswer === q.answer);
+                    
+                    if (q.isCorrect) {
+                        scoreForThisPage++;
+                    }
+                    showFeedbackForQuestion(q, questionCard);
+
+                    const radioInputs = questionCard.querySelectorAll('input[type="radio"]');
+                    radioInputs.forEach(input => input.disabled = true);
+                } else {
+                    const feedbackElement = questionCard.querySelector('.feedback');
+                    feedbackElement.textContent = '답을 선택하지 않았습니다.';
+                    feedbackElement.className = 'feedback incorrect';
+                    feedbackElement.style.display = 'block';
+                    q.isCorrect = false;
+                }
+            });
+            
+            pageScores[currentPage] = scoreForThisPage;
+            pageAttempted[currentPage] = true;
+            submitPageButton.disabled = true;
+            submitPageButton.textContent = '채점 완료';
+            
+            scoreSectionElement.style.display = 'block';
+            updateScoreDisplay();
+            showMotivationalQuote();
+
+            const quizContainerElement = document.querySelector('.quiz-container');
+            if (quizContainerElement) {
+                quizContainerElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+
+        // ------------------ 팝업 및 초기화 ------------------
+        
+        window.onload = () => {
+            if (welcomePopup) {
+                const popupSessionKey = 'strataAgeQuizChanT'; 
+                const popupShownThisSession = sessionStorage.getItem(popupSessionKey);
+                if (!popupShownThisSession) {
+                    welcomePopup.classList.add('show');
+                } else {
+                    initializeQuizData();
+                    renderQuestionsForPage(0);
+                }
+            } else {
+                initializeQuizData();
+                renderQuestionsForPage(0);
+            }
+        };
+
+        if (popupConfirmButton) {
+            popupConfirmButton.addEventListener('click', () => {
+                if (popupPasswordInput.value === correctPassword) {
+                    if (welcomePopup) {
+                        welcomePopup.classList.remove('show');
+                    }
+                    const popupSessionKey = 'strataAgeQuizChanT';
+                    sessionStorage.setItem(popupSessionKey, 'true');
+                    initializeQuizData();
+                    renderQuestionsForPage(0);
+                } else {
+                    if (popupErrorMessage) {
+                        popupErrorMessage.textContent = "비밀번호가 틀렸습니다. 다시 시도해주세요.";
+                    }
+                    popupPasswordInput.value = '';
+                    popupPasswordInput.focus();
+                }
+            });
+        }
+        
+        if (popupPasswordInput) {
+            popupPasswordInput.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    popupConfirmButton.click();
+                }
+            });
+        }
+
+    </script>
+</body>
+</html>
