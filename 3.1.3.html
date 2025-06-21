@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>찬T의 별의 진화 퀴즈</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f0f4f8;
+        }
+        .quiz-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 1.5rem;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .question-card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #2d3748;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        .question-text .blank-emphasis {
+            font-weight: bold;
+            color: #3b82f6;
+        }
+        .option-label {
+            display: block;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+            background-color: #f7fafc;
+        }
+        .option-label:hover {
+            background-color: #e2e8f0;
+        }
+        .option-input:checked + .option-label {
+            background-color: #4299e1;
+            color: white;
+            border-color: #2b6cb0;
+        }
+        .feedback {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+        .feedback.correct {
+            background-color: #c6f6d5;
+            color: #2f855a;
+            border: 1px solid #9ae6b4;
+        }
+        .feedback.incorrect {
+            background-color: #fed7d7;
+            color: #c53030;
+            border: 1px solid #fbb6ce;
+        }
+        .explanation {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #4a5568;
+            line-height: 1.5;
+        }
+        .action-button {
+            background-color: #4a5568;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border: none;
+            margin-top: 1rem;
+            margin-right: 0.5rem;
+        }
+        .action-button:hover:not(:disabled) {
+            background-color: #2d3748;
+        }
+        .action-button:disabled {
+            background-color: #a0aec0;
+            cursor: not-allowed;
+        }
+        .pagination-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        .pagination-controls button, .pagination-controls span {
+            margin: 0 0.25rem;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            background-color: #fff;
+            cursor: pointer;
+        }
+        .pagination-controls button:disabled {
+            background-color: #e2e8f0;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .pagination-controls .page-number.current {
+            background-color: #4299e1;
+            color: white;
+            border-color: #2b6cb0;
+            font-weight: bold;
+        }
+        .score-section {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background-color: #e9f5ff;
+            border-radius: 8px;
+            text-align: left;
+        }
+        .score-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #1a202c;
+            margin-bottom: 0.5rem;
+        }
+        .quiz-title-in-score {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #1e40af;
+            margin-bottom: 0.75rem;
+        }
+        .motivational-quote {
+            font-size: 1rem;
+            font-style: italic;
+            color: #374151;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px dashed #cbd5e0;
+            text-align: center;
+        }
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a202c;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .page-info {
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: #4a5568;
+        }
+        .popup-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); display: flex;
+            justify-content: center; align-items: center; z-index: 1000;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        .popup-overlay.show { opacity: 1; visibility: visible; }
+        .popup-content {
+            background-color: white; padding: 2.5rem; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); text-align: center;
+            max-width: 420px; width: 90%;
+        }
+        .popup-content h2 {
+            font-size: 1.75rem; font-weight: 700; color: #1a202c; margin-bottom: 1rem;
+        }
+        .popup-content p.welcome-message {
+            font-size: 1rem; color: #4a5568; margin-bottom: 1.5rem; line-height: 1.6;
+        }
+        .popup-password-input {
+            width: 100%; padding: 0.75rem; margin-bottom: 1rem;
+            border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem;
+            box-sizing: border-box;
+        }
+        .popup-confirm-btn {
+            background-color: #3b82f6; color: white; padding: 0.75rem 1.5rem;
+            border-radius: 8px; font-weight: 500; cursor: pointer;
+            transition: background-color 0.2s; border: none; width: 100%;
+            font-size: 1rem;
+        }
+        .popup-confirm-btn:hover { background-color: #2563eb; }
+        .popup-error-message {
+            color: #ef4444; font-size: 0.875rem; margin-top: 0.75rem;
+            min-height: 1.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="welcome-popup" class="popup-overlay">
+        <div class="popup-content">
+            <h2>찬T의 퀴즈</h2>
+            <p class="welcome-message">비밀번호를 입력해주세요.</p>
+            <input type="password" id="popup-password" class="popup-password-input" placeholder="비밀번호">
+            <button id="popup-confirm" class="popup-confirm-btn">확인</button>
+            <p id="popup-error" class="popup-error-message"></p>
+        </div>
+    </div>
+    <div class="quiz-container">
+        <h1>찬T의 별의 진화 퀴즈</h1>
+        <div class="page-info" id="page-info"></div>
+        <div id="quiz">
+            </div>
+        <div class="pagination-controls" id="pagination-controls">
+            </div>
+        <button id="submit-page-btn" class="action-button w-full sm:w-auto mx-auto block">이번 페이지 채점하기</button>
+        <div class="score-section" id="score-section" style="display: none;">
+            <p class="score-text quiz-title-in-score" id="quiz-main-title-in-score"></p>
+            <p class="score-text" id="current-page-score-text"></p>
+            <p class="score-text" id="total-score-text"></p>
+            <p class="motivational-quote" id="motivational-quote" style="display: none;"></p>
+        </div>
+    </div>
+
+    <script>
+        // ------------------ 문제 데이터 (총 30문제) ------------------
+        const questions = [
+            {
+                id: 1,
+                type: 'fill-in',
+                text: "별은 성간 물질이 모여 있는 성운 중, 밀도가 ( )고 온도가 ( )은 영역에서 주로 탄생한다.",
+                answer: "높; 낮",
+                options: ["높; 높", "낮; 높", "높; 낮", "낮; 낮"],
+                explanation: "성운 내부에서 밀도가 높고 온도가 낮은 영역이어야 중력이 다른 힘들을 이기고 물질을 수축시켜 별을 형성할 수 있습니다."
+            },
+            {
+                id: 2,
+                type: 'fill-in',
+                text: "원시별이 수축하면서 빛을 내는 주된 에너지원은 ( )이다.",
+                answer: "중력 수축 에너지",
+                options: ["수소 핵융합 에너지", "헬륨 핵융합 에너지", "중력 수축 에너지", "화학 에너지"],
+                explanation: "원시별은 아직 중심부 온도가 핵융합을 일으킬 만큼 높지 않으므로, 중력에 의해 수축하면서 발생하는 위치 에너지의 변화가 열과 빛에너지로 전환됩니다."
+            },
+            {
+                id: 3,
+                type: 'fill-in',
+                text: "원시별의 중심부 온도가 약 ( )에 도달하면, 수소 핵융합 반응이 시작되며 비로소 '별(주계열성)'이 된다.",
+                answer: "1000만 K",
+                options: ["1000 K", "10만 K", "100만 K", "1000만 K"],
+                explanation: "수소 핵융합 반응이 일어나기 위한 최소 온도는 약 1000만 K입니다. 이 온도에 도달해야 안정된 별인 주계열성이 탄생합니다."
+            },
+            {
+                id: 4,
+                type: 'fill-in',
+                text: "질량이 태양의 0.08배보다 작은 원시별은 중심부 온도가 충분히 높아지지 못해 핵융합 반응을 하지 못하고 ( )이/가 된다.",
+                answer: "갈색 왜성",
+                options: ["백색 왜성", "중성자별", "갈색 왜성", "행성상 성운"],
+                explanation: "질량이 너무 작아 별이 되지 못한 천체를 갈색 왜성이라고 합니다. 이들은 행성과 별의 중간 단계에 해당합니다."
+            },
+            {
+                id: 5,
+                type: 'ox',
+                text: "원시별의 질량이 클수록 중력 수축이 빠르게 일어나 주계열 단계에 더 빨리 도달한다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 질량이 클수록 중력이 강해 더 빠르게 수축하고, 중심부 온도도 더 빨리 상승하여 주계열에 도달하는 시간이 짧아집니다."
+            },
+            {
+                id: 6,
+                type: 'fill-in',
+                text: "별이 일생의 약 90%를 보내는 가장 안정적인 단계를 ( )이라고 한다.",
+                answer: "주계열성",
+                options: ["원시별", "적색 거성", "주계열성", "백색 왜성"],
+                explanation: "주계열 단계에서는 중심부의 수소 핵융합 반응으로 발생하는 내부 압력과 별 자체의 중력이 평형(정역학적 평형)을 이루어 크기가 일정하게 유지됩니다."
+            },
+            {
+                id: 7,
+                type: 'fill-in',
+                text: "주계열성의 질량이 클수록 광도가 크고 에너지 소모율이 높아 수명은 ( ).",
+                answer: "짧아진다",
+                options: ["길어진다", "짧아진다", "변함없다", "예측할 수 없다"],
+                explanation: "질량이 큰 별은 핵융합 반응이 폭발적으로 일어나 에너지를 많이 방출하지만, 그만큼 연료(수소)를 빨리 소모하기 때문에 수명은 오히려 짧습니다. ($$ t \\propto \\frac{1}{M^{2.5}} $$)"
+            },
+            {
+                id: 8,
+                type: 'fill-in',
+                text: "태양과 질량이 비슷한 별이 주계열 단계를 마치면, 다음 단계로 진화하는 것은 무엇인가?",
+                answer: "적색 거성",
+                options: ["초거성", "적색 거성", "백색 왜성", "초신성"],
+                explanation: "중심부의 수소가 고갈되면 중심핵은 수축하고, 그 바깥의 수소 껍질이 핵융합을 시작하면서 별의 외곽층이 크게 팽창하여 표면 온도가 낮고 붉게 보이는 적색 거성이 됩니다."
+            },
+            {
+                id: 9,
+                type: 'fill-in',
+                text: "적색 거성의 중심부에서는 ( ) 핵융합 반응이 일어나 탄소가 생성된다.",
+                answer: "헬륨",
+                options: ["수소", "헬륨", "탄소", "철"],
+                explanation: "수축하는 중심핵의 온도가 약 1억 K에 도달하면, 3개의 헬륨 원자핵이 1개의 탄소 원자핵으로 융합되는 헬륨 핵융합 반응이 시작됩니다."
+            },
+            {
+                id: 10,
+                type: 'fill-in',
+                text: "적색 거성 단계 이후, 별의 외곽층 물질이 우주 공간으로 방출되어 형성되는 아름다운 성운은 ( )이다.",
+                answer: "행성상 성운",
+                options: ["암흑 성운", "반사 성운", "초신성 잔해", "행성상 성운"],
+                explanation: "불안정해진 적색 거성은 팽창과 수축을 반복하다가 결국 바깥층 가스를 우주로 날려 보내 행성상 성운을 만들고, 중심부에는 핵만 남게 됩니다."
+            },
+            {
+                id: 11,
+                type: 'fill-in',
+                text: "태양과 질량이 비슷한 별의 최종 진화 단계는 무엇인가?",
+                answer: "백색 왜성",
+                options: ["중성자별", "블랙홀", "갈색 왜성", "백색 왜성"],
+                explanation: "행성상 성운으로 외곽 물질을 방출한 후, 남은 중심핵이 수축하여 밀도가 매우 높은 작은 별인 백색 왜성이 되어 서서히 식어갑니다."
+            },
+            {
+                id: 12,
+                type: 'fill-in',
+                text: "태양보다 질량이 매우 큰 별은 주계열 이후 ( )으로 진화한다.",
+                answer: "초거성",
+                options: ["적색 거성", "초거성", "백색 왜성", "준거성"],
+                explanation: "질량이 매우 큰 별은 적색 거성보다 훨씬 더 크고 밝은 초거성으로 진화하며, 중심부에서 더 무거운 원소들을 만들어냅니다."
+            },
+            {
+                id: 13,
+                type: 'fill-in',
+                text: "질량이 큰 별의 중심부에서 핵융합 반응으로 만들어질 수 있는 가장 무거운 원소는 무엇인가?",
+                answer: "철(Fe)",
+                options: ["탄소(C)", "산소(O)", "규소(Si)", "철(Fe)"],
+                explanation: "철은 원자핵이 가장 안정하여, 철보다 무거운 원소를 핵융합으로 만들려면 에너지를 흡수해야 합니다. 따라서 별의 중심부 핵융합은 철에서 멈춥니다."
+            },
+            {
+                id: 14,
+                type: 'fill-in',
+                text: "질량이 매우 큰 별이 중심핵의 중력을 이기지 못하고 폭발하는 현상을 ( )이라고 한다.",
+                answer: "초신성 폭발",
+                options: ["신성", "헬륨 섬광", "초신성 폭발", "감마선 폭발"],
+                explanation: "철까지 생성된 중심핵에서 핵융합이 멈추면, 별은 자체 중력으로 급격히 붕괴했다가 거대하게 폭발하는데, 이를 초신성 폭발이라고 합니다."
+            },
+            {
+                id: 15,
+                type: 'fill-in',
+                text: "금, 납, 우라늄 등 철보다 무거운 원소들은 주로 어디에서 생성되는가?",
+                answer: "초신성 폭발 과정",
+                options: ["주계열성의 중심부", "적색 거성의 중심부", "초신성 폭발 과정", "백색 왜성의 표면"],
+                explanation: "철보다 무거운 원소들은 일반적인 별의 핵융합 반응으로는 만들어지지 않으며, 초신성이 폭발할 때 발생하는 막대한 에너지에 의해 순간적으로 생성됩니다."
+            },
+            {
+                id: 16,
+                type: 'ox',
+                text: "초신성 폭발 후 남은 중심핵의 질량이 태양의 3배 이상이면 중성자별이 된다.",
+                answer: "X",
+                options: ["O", "X"],
+                explanation: "아닙니다. 중심핵의 질량이 태양의 약 3배 이상이면 중력 붕괴를 계속하여 빛조차 빠져나올 수 없는 블랙홀이 됩니다."
+            },
+            {
+                id: 17,
+                type: 'fill-in',
+                text: "초신성 폭발 후 남은 중심핵의 질량이 태양의 약 1.4배 ~ 3배 사이일 때 생성되는 천체는?",
+                answer: "중성자별",
+                options: ["백색 왜성", "갈색 왜성", "중성자별", "블랙홀"],
+                explanation: "이 질량 범위에서는 중력 붕괴가 중성자들의 축퇴압에 의해 멈추어, 원자핵이 붕괴되어 대부분 중성자로 이루어진 매우 밀도가 높은 중성자별이 형성됩니다."
+            },
+            {
+                id: 18,
+                type: 'ox',
+                text: "별의 진화 과정에서 생성된 다양한 원소들은 행성상 성운이나 초신성 폭발을 통해 우주 공간으로 되돌아간다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 이렇게 우주 공간으로 방출된 물질들은 다시 성운을 이루어 새로운 별과 행성, 그리고 생명체를 만드는 재료가 됩니다. 이를 '별의 순환'이라고 합니다."
+            },
+            {
+                id: 19,
+                type: 'fill-in',
+                text: "H-R도에서 별이 주계열성에서 적색 거성으로 진화할 때, 표면 온도는 ( )하고 광도는 ( )한다.",
+                answer: "낮아지고; 증가",
+                options: ["높아지고; 감소", "낮아지고; 증가", "높아지고; 증가", "낮아지고; 감소"],
+                explanation: "별의 외곽층이 크게 팽창하면서 표면적은 넓어지고 표면 온도는 낮아집니다. 온도는 낮아졌지만 표면적이 훨씬 더 커졌기 때문에 총 방출 에너지양, 즉 광도는 증가합니다."
+            },
+            {
+                id: 20,
+                type: 'fill-in',
+                text: "H-R도에서 적색 거성이 백색 왜성으로 진화할 때, 표면 온도는 ( )하고 광도는 ( )한다.",
+                answer: "높아지고; 감소",
+                options: ["높아지고; 감소", "낮아지고; 증가", "높아지고; 증가", "낮아지고; 감소"],
+                explanation: "별의 외곽층은 날아가고 뜨거운 중심핵이 드러나므로 표면 온도는 높아집니다. 하지만 크기 자체가 매우 작아졌기 때문에 총 방출 에너지양, 즉 광도는 급격히 감소합니다."
+            },
+            {
+                id: 21,
+                type: 'fill-in',
+                text: "별의 내부에서 기체의 압력에 의해 팽창하려는 힘과 중력에 의해 수축하려는 힘이 평형을 이루는 상태를 ( )이라고 한다.",
+                answer: "정역학적 평형",
+                options: ["열역학 제1법칙", "케플러 법칙", "정역학적 평형", "복사 평형"],
+                explanation: "주계열성은 이 정역학적 평형 상태에 있기 때문에 크기가 일정하게 유지될 수 있습니다."
+            },
+            {
+                id: 22,
+                type: 'ox',
+                text: "질량이 태양과 비슷한 별은 중심부에서 철까지 생성할 수 있다.",
+                answer: "X",
+                options: ["O", "X"],
+                explanation: "아닙니다. 질량이 태양과 비슷한 별은 중심부에서 헬륨 핵융합을 통해 탄소까지만 생성하고, 그 이상의 핵융합 반응을 일으킬 만큼 온도가 높아지지 않습니다."
+            },
+            {
+                id: 23,
+                type: 'fill-in',
+                text: "다음 중 밀도가 가장 큰 천체는 무엇인가?",
+                answer: "블랙홀",
+                options: ["주계열성", "백색 왜성", "중성자별", "블랙홀"],
+                explanation: "블랙홀은 중력이 너무 커서 물질이 한 점으로 무한히 수축한 특이점으로, 밀도가 무한대라고 할 수 있습니다. 그 다음으로 중성자별, 백색 왜성 순으로 밀도가 높습니다."
+            },
+            {
+                id: 24,
+                type: 'ox',
+                text: "우리 몸을 구성하는 탄소, 산소 등의 원소들은 과거의 어떤 별 내부에서 만들어졌다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 우주 초기에 존재했던 원소는 수소와 헬륨뿐이었습니다. 그 외의 모든 무거운 원소들은 별의 핵융합 반응이나 초신성 폭발을 통해 생성되어 우주에 퍼져나간 것입니다."
+            },
+            {
+                id: 25,
+                type: 'fill-in',
+                text: "질량이 큰 원시별이 주계열성으로 진화할 때 H-R도 상에서 주로 ( ) 방향으로 이동한다.",
+                answer: "수평 (왼쪽)",
+                options: ["수직 (아래)", "수평 (왼쪽)", "대각선 (오른쪽 위)", "수직 (위)"],
+                explanation: "질량이 큰 원시별은 수축하면서 광도는 크게 변하지 않고 표면 온도만 빠르게 높아지기 때문에, H-R도에서 왼쪽으로 수평하게 이동하여 주계열에 도달합니다."
+            },
+            {
+                id: 26,
+                type: 'fill-in',
+                text: "별의 진화 단계 중, 별의 크기가 주기적으로 변하면서 밝기가 변하는 별을 ( )이라고 한다.",
+                answer: "맥동 변광성",
+                options: ["쌍성", "맥동 변광성", "신성", "성단"],
+                explanation: "적색 거성 단계의 별들 중 일부는 내부 구조가 불안정하여 팽창과 수축을 반복하면서 밝기가 주기적으로 변하는 맥동 변광성이 되기도 합니다."
+            },
+            {
+                id: 27,
+                type: 'fill-in',
+                text: "매우 빠르게 자전하며 강력한 전파를 방출하는 중성자별을 ( )이라고도 부른다.",
+                answer: "펄서",
+                options: ["퀘이사", "마그네타", "펄서", "블레이자"],
+                explanation: "펄서는 중성자별이 빠르게 회전하면서 자기장의 축 방향으로 강력한 전파를 방출하는 것을 말하며, 등대처럼 주기적인 신호가 관측됩니다."
+            },
+            {
+                id: 28,
+                type: 'ox',
+                text: "우리 태양은 마지막에 초신성 폭발을 일으키며 생을 마감할 것이다.",
+                answer: "X",
+                options: ["O", "X"],
+                explanation: "아닙니다. 태양은 질량이 충분히 크지 않기 때문에 초신성 폭발을 일으키지 못합니다. 태양은 적색 거성 단계를 거쳐 행성상 성운과 백색 왜성을 남기며 생을 마감합니다."
+            },
+            {
+                id: 29,
+                type: 'fill-in',
+                text: "별의 진화 경로를 결정하는 가장 중요한 물리량은 무엇인가?",
+                answer: "질량",
+                options: ["나이", "질량", "색깔", "자전 속도"],
+                explanation: "별의 초기 질량은 그 별의 수명, 광도, 표면 온도, 그리고 최종적으로 어떤 최후를 맞이할지(백색 왜성, 중성자별, 블랙홀)를 결정하는 가장 핵심적인 요소입니다."
+            },
+            {
+                id: 30,
+                type: 'ox',
+                text: "초신성 폭발로 방출된 물질은 주변의 성간 물질을 압축시켜 새로운 별의 탄생을 촉진하기도 한다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 초신성 폭발의 충격파는 주변 성운을 압축시켜 밀도를 높여줌으로써, 새로운 세대의 별들이 탄생할 수 있는 계기를 마련해주는 역할을 합니다."
+            }
+        ];
+
+        // ------------------ 명언 목록 ------------------
+        const motivationalQuotes = [
+            "오늘의 노력이 내일의 너를 만든다.", "포기하지 않는 한, 실패는 없다.", "가장 큰 위험은 아무 위험도 감수하지 않는 것이다.",
+            "배움은 의무도, 생존도 아니다. 그것은 우리의 가장 큰 특권이다.", "성공은 최종 목적지가 아니며, 실패는 치명적이지 않다. 중요한 것은 계속 나아가는 용기다.",
+            "작은 성공들이 모여 큰 성공을 이룬다.", "어제보다 나은 오늘, 오늘보다 나은 내일을 만들자.",
+            "가장 큰 영광은 한 번도 실패하지 않음이 아니라 실패할 때마다 다시 일어서는 데에 있다.", "천리길도 한 걸음부터.", "노력은 결코 배신하지 않는다."
+        ];
+
+        // ------------------ DOM 요소 ------------------
+        const quizElement = document.getElementById('quiz');
+        const paginationControlsElement = document.getElementById('pagination-controls');
+        const submitPageButton = document.getElementById('submit-page-btn');
+        const scoreSectionElement = document.getElementById('score-section');
+        const currentPageScoreTextElement = document.getElementById('current-page-score-text');
+        const totalScoreTextElement = document.getElementById('total-score-text');
+        const pageInfoElement = document.getElementById('page-info');
+        const quizMainTitleDisplayElement = document.getElementById('quiz-main-title-in-score');
+        const motivationalQuoteElement = document.getElementById('motivational-quote');
+        
+        const welcomePopup = document.getElementById('welcome-popup');
+        const popupPasswordInput = document.getElementById('popup-password');
+        const popupConfirmButton = document.getElementById('popup-confirm');
+        const popupErrorMessage = document.getElementById('popup-error');
+
+        // ------------------ 퀴즈 설정 ------------------
+        const correctPassword = "chan"; // 비밀번호 설정
+        const questionsPerPage = 5; // 페이지 당 문제 수
+        let currentPage = 0;
+        let pageScores = [];
+        let pageAttempted = [];
+
+        // ------------------ 함수 ------------------
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function initializeQuizData() {
+            questions.forEach(q => {
+                q.userAnswer = null;
+                q.isCorrect = null;
+                q.attemptedThisSession = false;
+                if (q.options) {
+                   shuffleArray(q.options);
+                }
+            });
+            const numPages = Math.ceil(questions.length / questionsPerPage);
+            pageAttempted = new Array(numPages).fill(false);
+            pageScores = new Array(numPages).fill(0);
+        }
+
+        function renderQuestionsForPage(page) {
+            quizElement.innerHTML = '';
+            currentPage = page;
+
+            const start = page * questionsPerPage;
+            const end = Math.min(start + questionsPerPage, questions.length);
+            const questionsOnPage = questions.slice(start, end);
+
+            pageInfoElement.textContent = `총 ${questions.length}문제 중 ${start + 1} - ${end}번 문제`;
+
+            questionsOnPage.forEach((q, indexOnPage) => {
+                const questionCard = document.createElement('div');
+                questionCard.classList.add('question-card');
+                questionCard.id = `question-${q.id}`;
+
+                const questionText = document.createElement('p');
+                questionText.classList.add('question-text');
+                questionText.innerHTML = `${q.id}. ${q.text.replace(/(\(\s*\))/g, '<span class="blank-emphasis">( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</span>')}`;
+                questionCard.appendChild(questionText);
+
+                const optionsContainer = document.createElement('div');
+                optionsContainer.classList.add('options');
+
+                q.options.forEach((option, index) => {
+                    const optionId = `q${q.id}-option-${index}`;
+                    
+                    const radioInput = document.createElement('input');
+                    radioInput.type = 'radio';
+                    radioInput.id = optionId;
+                    radioInput.name = `question-${q.id}`;
+                    radioInput.value = option;
+                    radioInput.classList.add('option-input', 'hidden');
+                    if (q.userAnswer === option) radioInput.checked = true;
+                    if (pageAttempted[currentPage]) radioInput.disabled = true;
+
+                    const optionLabel = document.createElement('label');
+                    optionLabel.htmlFor = optionId;
+                    optionLabel.textContent = option;
+                    optionLabel.classList.add('option-label');
+                    if (pageAttempted[currentPage]) optionLabel.classList.add('opacity-70', 'cursor-not-allowed');
+
+                    optionsContainer.appendChild(radioInput);
+                    optionsContainer.appendChild(optionLabel);
+                });
+                questionCard.appendChild(optionsContainer);
+
+                const feedbackElement = document.createElement('div');
+                feedbackElement.classList.add('feedback');
+                feedbackElement.style.display = 'none';
+                questionCard.appendChild(feedbackElement);
+                
+                if (pageAttempted[currentPage] && q.attemptedThisSession) {
+                    showFeedbackForQuestion(q, questionCard);
+                }
+                quizElement.appendChild(questionCard);
+            });
+
+            const numPages = Math.ceil(questions.length / questionsPerPage);
+            if (numPages > 1) {
+                paginationControlsElement.style.display = 'flex';
+                renderPaginationControls();
+            } else {
+                paginationControlsElement.style.display = 'none';
+            }
+
+            submitPageButton.disabled = pageAttempted[currentPage];
+            if (pageAttempted[currentPage]) {
+                submitPageButton.textContent = '채점 완료';
+                scoreSectionElement.style.display = 'block';
+                updateScoreDisplay();
+                showMotivationalQuote();
+            } else {
+                submitPageButton.textContent = '이번 페이지 채점하기';
+                motivationalQuoteElement.style.display = 'none';
+                if (questionsOnPage.length > 0) {
+                    scoreSectionElement.style.display = 'none';
+                }
+            }
+        }
+        
+        function showFeedbackForQuestion(question, questionCard) {
+            const feedbackElement = questionCard.querySelector('.feedback');
+            if (!feedbackElement) return;
+
+            feedbackElement.innerHTML = '';
+            
+            if (question.isCorrect) {
+                feedbackElement.innerHTML = '<strong class="font-semibold">정답입니다!</strong> 🎉';
+                feedbackElement.className = 'feedback correct';
+            } else {
+                feedbackElement.innerHTML = `<strong class="font-semibold">오답입니다.</strong> 정답은 "<span class="font-bold text-red-700">${question.answer}</span>"입니다.`;
+                feedbackElement.className = 'feedback incorrect';
+            }
+
+            const explanationElement = document.createElement('p');
+            explanationElement.classList.add('explanation');
+            explanationElement.innerHTML = `<strong class="font-semibold">해설:</strong> ${question.explanation}`;
+            feedbackElement.appendChild(explanationElement);
+            feedbackElement.style.display = 'block';
+        }
+
+        function renderPaginationControls() {
+            paginationControlsElement.innerHTML = '';
+            const numPages = Math.ceil(questions.length / questionsPerPage);
+
+            const prevButton = document.createElement('button');
+            prevButton.textContent = '이전';
+            prevButton.disabled = currentPage === 0;
+            prevButton.onclick = () => renderQuestionsForPage(currentPage - 1);
+            paginationControlsElement.appendChild(prevButton);
+
+            for (let i = 0; i < numPages; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i + 1;
+                pageButton.classList.add('page-number');
+                if (i === currentPage) {
+                    pageButton.classList.add('current');
+                }
+                pageButton.onclick = () => renderQuestionsForPage(i);
+                paginationControlsElement.appendChild(pageButton);
+            }
+
+            const nextButton = document.createElement('button');
+            nextButton.textContent = '다음';
+            nextButton.disabled = currentPage === numPages - 1;
+            nextButton.onclick = () => renderQuestionsForPage(currentPage + 1);
+            paginationControlsElement.appendChild(nextButton);
+        }
+
+        function showMotivationalQuote() {
+            const randomIndex = Math.floor(Math.random() * motivationalQuotes.length);
+            motivationalQuoteElement.textContent = motivationalQuotes[randomIndex];
+            motivationalQuoteElement.style.display = 'block';
+        }
+
+        function updateScoreDisplay() {
+            const questionsOnThisPageCount = Math.min(questionsPerPage, questions.length - (currentPage * questionsPerPage));
+            currentPageScoreTextElement.textContent = `이번 페이지 점수: ${pageScores[currentPage]} / ${questionsOnThisPageCount}`;
+            
+            let currentTotalScore = 0;
+            let currentTotalAttemptedQuestions = 0;
+            for(let i=0; i < pageAttempted.length; i++){
+                if(pageAttempted[i]){
+                    const start = i * questionsPerPage;
+                    const end = Math.min(start + questionsPerPage, questions.length);
+                    currentTotalAttemptedQuestions += (end-start);
+                    currentTotalScore += pageScores[i];
+                }
+            }
+
+            const quizTitleElement = document.querySelector('h1');
+            quizMainTitleDisplayElement.textContent = quizTitleElement.textContent;
+
+            if (currentTotalAttemptedQuestions > 0) {
+                totalScoreTextElement.style.display = 'block';
+                totalScoreTextElement.textContent = `총 누적 점수: ${currentTotalScore} / ${currentTotalAttemptedQuestions}`;
+            } else {
+                totalScoreTextElement.style.display = 'none';
+            }
+        }
+        
+        // ------------------ 이벤트 리스너 ------------------
+
+        submitPageButton.addEventListener('click', () => {
+            if (pageAttempted[currentPage]) return;
+
+            let scoreForThisPage = 0;
+            
+            const start = currentPage * questionsPerPage;
+            const end = Math.min(start + questionsPerPage, questions.length);
+            const questionsOnPage = questions.slice(start, end);
+
+            questionsOnPage.forEach((q, indexOnPage) => {
+                const questionCard = quizElement.children[indexOnPage];
+                const selectedOptionInput = questionCard.querySelector(`input[name="question-${q.id}"]:checked`);
+                
+                q.attemptedThisSession = true;
+
+                if (selectedOptionInput) {
+                    q.userAnswer = selectedOptionInput.value;
+                    q.isCorrect = (q.userAnswer === q.answer);
+                    
+                    if (q.isCorrect) {
+                        scoreForThisPage++;
+                    }
+                    showFeedbackForQuestion(q, questionCard);
+
+                    const radioInputs = questionCard.querySelectorAll('input[type="radio"]');
+                    radioInputs.forEach(input => input.disabled = true);
+                } else {
+                    const feedbackElement = questionCard.querySelector('.feedback');
+                    feedbackElement.textContent = '답을 선택하지 않았습니다.';
+                    feedbackElement.className = 'feedback incorrect';
+                    feedbackElement.style.display = 'block';
+                    q.isCorrect = false;
+                }
+            });
+            
+            pageScores[currentPage] = scoreForThisPage;
+            pageAttempted[currentPage] = true;
+            submitPageButton.disabled = true;
+            submitPageButton.textContent = '채점 완료';
+            
+            scoreSectionElement.style.display = 'block';
+            updateScoreDisplay();
+            showMotivationalQuote();
+
+            const quizContainerElement = document.querySelector('.quiz-container');
+            if (quizContainerElement) {
+                quizContainerElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+
+        // ------------------ 팝업 및 초기화 ------------------
+        
+        window.onload = () => {
+            if (welcomePopup) {
+                const popupSessionKey = 'stellarEvolutionQuizChanT'; 
+                const popupShownThisSession = sessionStorage.getItem(popupSessionKey);
+                if (!popupShownThisSession) {
+                    welcomePopup.classList.add('show');
+                } else {
+                    initializeQuizData();
+                    renderQuestionsForPage(0);
+                }
+            } else {
+                initializeQuizData();
+                renderQuestionsForPage(0);
+            }
+        };
+
+        if (popupConfirmButton) {
+            popupConfirmButton.addEventListener('click', () => {
+                if (popupPasswordInput.value === correctPassword) {
+                    if (welcomePopup) {
+                        welcomePopup.classList.remove('show');
+                    }
+                    const popupSessionKey = 'stellarEvolutionQuizChanT';
+                    sessionStorage.setItem(popupSessionKey, 'true');
+                    initializeQuizData();
+                    renderQuestionsForPage(0);
+                } else {
+                    if (popupErrorMessage) {
+                        popupErrorMessage.textContent = "비밀번호가 틀렸습니다. 다시 시도해주세요.";
+                    }
+                    popupPasswordInput.value = '';
+                    popupPasswordInput.focus();
+                }
+            });
+        }
+        
+        if (popupPasswordInput) {
+            popupPasswordInput.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    popupConfirmButton.click();
+                }
+            });
+        }
+
+    </script>
+</body>
+</html>
