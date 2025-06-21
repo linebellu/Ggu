@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>찬T의 해수의 성질 퀴즈</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f0f4f8;
+        }
+        .quiz-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 1.5rem;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .question-card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #2d3748;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        .question-text .blank-emphasis {
+            font-weight: bold;
+            color: #3b82f6;
+        }
+        .option-label {
+            display: block;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+            background-color: #f7fafc;
+        }
+        .option-label:hover {
+            background-color: #e2e8f0;
+        }
+        .option-input:checked + .option-label {
+            background-color: #4299e1;
+            color: white;
+            border-color: #2b6cb0;
+        }
+        .feedback {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+        .feedback.correct {
+            background-color: #c6f6d5;
+            color: #2f855a;
+            border: 1px solid #9ae6b4;
+        }
+        .feedback.incorrect {
+            background-color: #fed7d7;
+            color: #c53030;
+            border: 1px solid #fbb6ce;
+        }
+        .explanation {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #4a5568;
+            line-height: 1.5;
+        }
+        .action-button {
+            background-color: #4a5568;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border: none;
+            margin-top: 1rem;
+            margin-right: 0.5rem;
+        }
+        .action-button:hover:not(:disabled) {
+            background-color: #2d3748;
+        }
+        .action-button:disabled {
+            background-color: #a0aec0;
+            cursor: not-allowed;
+        }
+        .pagination-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        .pagination-controls button, .pagination-controls span {
+            margin: 0 0.25rem;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            background-color: #fff;
+            cursor: pointer;
+        }
+        .pagination-controls button:disabled {
+            background-color: #e2e8f0;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .pagination-controls .page-number.current {
+            background-color: #4299e1;
+            color: white;
+            border-color: #2b6cb0;
+            font-weight: bold;
+        }
+        .score-section {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background-color: #e9f5ff;
+            border-radius: 8px;
+            text-align: left;
+        }
+        .score-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #1a202c;
+            margin-bottom: 0.5rem;
+        }
+        .quiz-title-in-score {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #1e40af;
+            margin-bottom: 0.75rem;
+        }
+        .motivational-quote {
+            font-size: 1rem;
+            font-style: italic;
+            color: #374151;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px dashed #cbd5e0;
+            text-align: center;
+        }
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a202c;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .page-info {
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: #4a5568;
+        }
+        .popup-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); display: flex;
+            justify-content: center; align-items: center; z-index: 1000;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        .popup-overlay.show { opacity: 1; visibility: visible; }
+        .popup-content {
+            background-color: white; padding: 2.5rem; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); text-align: center;
+            max-width: 420px; width: 90%;
+        }
+        .popup-content h2 {
+            font-size: 1.75rem; font-weight: 700; color: #1a202c; margin-bottom: 1rem;
+        }
+        .popup-content p.welcome-message {
+            font-size: 1rem; color: #4a5568; margin-bottom: 1.5rem; line-height: 1.6;
+        }
+        .popup-password-input {
+            width: 100%; padding: 0.75rem; margin-bottom: 1rem;
+            border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem;
+            box-sizing: border-box;
+        }
+        .popup-confirm-btn {
+            background-color: #3b82f6; color: white; padding: 0.75rem 1.5rem;
+            border-radius: 8px; font-weight: 500; cursor: pointer;
+            transition: background-color 0.2s; border: none; width: 100%;
+            font-size: 1rem;
+        }
+        .popup-confirm-btn:hover { background-color: #2563eb; }
+        .popup-error-message {
+            color: #ef4444; font-size: 0.875rem; margin-top: 0.75rem;
+            min-height: 1.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="welcome-popup" class="popup-overlay">
+        <div class="popup-content">
+            <h2>찬T의 퀴즈</h2>
+            <p class="welcome-message">비밀번호를 입력해주세요.</p>
+            <input type="password" id="popup-password" class="popup-password-input" placeholder="비밀번호">
+            <button id="popup-confirm" class="popup-confirm-btn">확인</button>
+            <p id="popup-error" class="popup-error-message"></p>
+        </div>
+    </div>
+    <div class="quiz-container">
+        <h1>찬T의 해수의 성질 퀴즈</h1>
+        <div class="page-info" id="page-info"></div>
+        <div id="quiz">
+            </div>
+        <div class="pagination-controls" id="pagination-controls">
+            </div>
+        <button id="submit-page-btn" class="action-button w-full sm:w-auto mx-auto block">이번 페이지 채점하기</button>
+        <div class="score-section" id="score-section" style="display: none;">
+            <p class="score-text quiz-title-in-score" id="quiz-main-title-in-score"></p>
+            <p class="score-text" id="current-page-score-text"></p>
+            <p class="score-text" id="total-score-text"></p>
+            <p class="motivational-quote" id="motivational-quote" style="display: none;"></p>
+        </div>
+    </div>
+
+    <script>
+        // ------------------ 문제 데이터 (총 30문제) ------------------
+        const questions = [
+            {
+                id: 1,
+                type: 'fill-in',
+                text: "해수 1kg 속에 녹아 있는 모든 염류의 양(g)을 나타낸 것을 염분이라고 하며, 단위는 ( )를 사용한다.",
+                answer: "psu",
+                options: ["psu", "ppm", "%", "g/L"],
+                explanation: "염분은 해수 1kg에 녹아 있는 염류의 총량을 g으로 나타낸 것이며, psu(실용염분단위) 단위를 사용합니다. "
+            },
+            {
+                id: 2,
+                type: 'fill-in',
+                text: "해수에 가장 많이 녹아있는 염류는 ( )이다.",
+                answer: "염화나트륨",
+                options: ["염화마그네슘", "황산칼슘", "염화나트륨", "황산마그네슘"],
+                explanation: "해수 염류 중 가장 많은 양을 차지하는 것은 짠맛을 내는 염화나트륨(NaCl)으로, 전체 염류의 약 77.7%를 차지합니다. "
+            },
+            {
+                id: 3,
+                type: 'ox',
+                text: "해역에 따라 염분은 달라져도, 해수를 구성하는 각 염류 간의 비율은 일정하게 유지된다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "이를 '염분비 일정 법칙'이라고 하며, 이는 해수가 오랜 시간에 걸쳐 전 세계적으로 고르게 섞이고 있음을 의미합니다. "
+            },
+            {
+                id: 4,
+                type: 'fill-in',
+                text: "표층 염분 변화에 가장 큰 영향을 미치는 요인은 ( )과/와 강수량이다.",
+                answer: "증발량",
+                options: ["수온", "밀도", "증발량", "해류"],
+                explanation: "'증발량 - 강수량' 값이 표층 염분 변화에 가장 큰 영향을 줍니다. 증발량이 강수량보다 많으면 염분이 높아집니다. "
+            },
+            {
+                id: 5,
+                type: 'fill-in',
+                text: "전 세계 해양에서 표층 염분이 가장 높게 나타나는 지역은 어디인가?",
+                answer: "중위도 해역",
+                options: ["적도 해역", "중위도 해역", "극 해역", "연안 해역"],
+                explanation: "중위도(위도 30° 부근) 해역은 고압대가 발달하여 강수량은 적고 증발량은 많기 때문에 표층 염분이 가장 높게 나타납니다. "
+            },
+            {
+                id: 6,
+                type: 'fill-in',
+                text: "극지방에서 해수가 얼 때, 주변 해수의 염분은 어떻게 변하는가?",
+                answer: "높아진다",
+                options: ["높아진다", "낮아진다", "변하지 않는다", "알 수 없다"],
+                explanation: "해수가 얼 때는 순수한 물(H₂O)만 얼기 때문에, 주변 해수에는 염류가 남게 되어 염분이 높아집니다. "
+            },
+            {
+                id: 7,
+                type: 'ox',
+                text: "육지에서 강물이 많이 유입되는 연안 지역은 대양의 중심부보다 염분이 높다.",
+                answer: "X",
+                options: ["O", "X"],
+                explanation: "아니다. 담수인 강물이 바다로 유입되면 해수를 희석시키기 때문에, 연안 지역은 대양 중심부보다 염분이 낮게 나타나는 경향이 있습니다. "
+            },
+            {
+                id: 8,
+                type: 'fill-in',
+                text: "해수의 표층 수온 분포에 가장 큰 영향을 미치는 요인은 ( )이다.",
+                answer: "태양 복사 에너지",
+                options: ["바람", "염분", "해류", "태양 복사 에너지"],
+                explanation: "해수의 표층 수온은 위도에 따라 달라지는 태양 복사 에너지의 양에 가장 큰 영향을 받습니다. "
+            },
+            {
+                id: 9,
+                type: 'fill-in',
+                text: "해수의 연직 구조 중, 바람의 혼합 작용으로 수온이 깊이에 따라 일정한 층을 무엇이라고 하는가?",
+                answer: "혼합층",
+                options: ["혼합층", "수온 약층", "심해층", "밀도 약층"],
+                explanation: "혼합층은 태양 에너지를 받아 수온이 높고, 바람에 의해 해수가 섞여 깊이에 따른 수온이 거의 일정한 층입니다. "
+            },
+            {
+                id: 10,
+                type: 'fill-in',
+                text: "깊어질수록 수온이 급격히 낮아져 매우 안정하며, 혼합층과 심해층 사이의 물질 교환을 차단하는 층은?",
+                answer: "수온 약층",
+                options: ["혼합층", "수온 약층", "심해층", "성층권"],
+                explanation: "수온 약층은 위쪽은 따뜻하고 아래쪽은 차가운 물로 이루어져 매우 안정합니다. 이 때문에 대류가 일어나지 않아 위아래 층의 열과 물질 교환을 막는 역할을 합니다. "
+            },
+            {
+                id: 11,
+                type: 'fill-in',
+                text: "바람이 강하게 부는 중위도 지역에서 가장 두껍게 발달하는 해수층은 어디인가?",
+                answer: "혼합층",
+                options: ["혼합층", "수온 약층", "심해층", "모든 층"],
+                explanation: "혼합층의 두께는 바람이 강할수록 두꺼워집니다. 따라서 바람이 강한 중위도 지역에서 혼합층이 가장 두껍게 나타납니다. "
+            },
+            {
+                id: 12,
+                type: 'fill-in',
+                text: "표층과 심층의 수온 차이가 가장 커서 수온 약층이 가장 뚜렷하게 발달하는 위도대는 어디인가?",
+                answer: "저위도",
+                options: ["저위도", "중위도", "고위도", "전 위도"],
+                explanation: "저위도는 태양 복사 에너지를 가장 많이 받아 표층 수온이 매우 높기 때문에, 차가운 심해층과의 수온 차이가 가장 커 수온 약층이 뚜렷하게 발달합니다. "
+            },
+            {
+                id: 13,
+                type: 'ox',
+                text: "고위도 해역은 표층부터 심층까지 수온이 낮고 거의 일정하여 뚜렷한 층상 구조가 나타나지 않는다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 고위도 지역은 흡수하는 태양 복사 에너지양이 매우 적어 표층 수온이 낮고, 따라서 깊이에 따른 수온 변화가 거의 없어 층상 구조가 발달하지 않습니다. "
+            },
+            {
+                id: 14,
+                type: 'fill-in',
+                text: "우리나라 주변 바다의 염분은 강수량이 집중되는 ( )에 더 낮게 나타난다.",
+                answer: "8월(여름철)",
+                options: ["2월(겨울철)", "5월(봄철)", "8월(여름철)", "11월(가을철)"],
+                explanation: "우리나라는 여름철, 특히 8월에 강수량이 집중되기 때문에 담수의 유입이 많아져 염분이 겨울철보다 낮아집니다. "
+            },
+            {
+                id: 15,
+                type: 'fill-in',
+                text: "해수의 밀도를 결정하는 주요 요인 2가지는 수온과 ( )이다.",
+                answer: "염분",
+                options: ["수압", "용존 산소", "염분", "투명도"],
+                explanation: "해수의 밀도는 주로 수온, 염분, 수압에 따라 달라지며, 특히 수온과 염분이 가장 큰 영향을 미칩니다. "
+            },
+            {
+                id: 16,
+                type: 'fill-in',
+                text: "일반적으로 해수의 밀도는 수온이 낮을수록, 염분이 높을수록 어떻게 되는가?",
+                answer: "커진다 (증가한다)",
+                options: ["커진다 (증가한다)", "작아진다 (감소한다)", "일정하다", "관계없다"],
+                explanation: "수온이 낮아지면 물 분자의 운동이 둔해져 밀도가 커지고, 염분이 높아지면 같은 부피에 더 많은 염류가 녹아있어 밀도가 커집니다. "
+            },
+            {
+                id: 17,
+                type: 'fill-in',
+                text: "수온-염분도(T-S도)에서 수온과 염분이 다르더라도 같은 ( ) 위에 있는 두 해수는 밀도가 같다.",
+                answer: "등밀도선",
+                options: ["등압선", "등수온선", "등염분선", "등밀도선"],
+                explanation: "수온-염분도에서 같은 밀도를 갖는 점들을 연결한 선을 등밀도선이라고 합니다. 이 선 위에 있는 해수들은 수온과 염분 조합은 달라도 밀도는 동일합니다. "
+            },
+            {
+                id: 18,
+                type: 'fill-in',
+                text: "수심에 따라 밀도가 급격하게 커지는 층을 ( )이라고 하며, 이는 ( )과 거의 일치한다.",
+                answer: "밀도 약층; 수온 약층",
+                options: ["밀도 약층; 혼합층", "혼합층; 심해층", "밀도 약층; 수온 약층", "심해층; 수온 약층"],
+                explanation: "수심에 따라 수온이 급격히 낮아지는 수온 약층에서 밀도가 급격히 커지므로, 밀도 약층과 수온 약층의 위치는 거의 일치합니다. "
+            },
+            {
+                id: 19,
+                type: 'ox',
+                text: "해수의 밀도는 표층 수온이 낮은 고위도에서 가장 높게 나타난다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 전반적으로 해수의 밀도는 수온의 영향을 가장 크게 받으므로, 표층 수온이 가장 낮은 고위도(위도 50°~60°) 부근에서 밀도가 가장 높게 나타납니다. "
+            },
+            {
+                id: 20,
+                type: 'fill-in',
+                text: "해수 속 용존 산소는 대기 중의 산소가 녹아들거나 해양 식물의 ( )을/를 통해 공급된다.",
+                answer: "광합성",
+                options: ["호흡", "분해", "광합성", "증산"],
+                explanation: "용존 산소는 대기와의 접촉을 통해 녹아 들어오거나, 표층에 사는 식물성 플랑크톤이 광합성을 하면서 산소를 만들어내 공급됩니다. "
+            },
+            {
+                id: 21,
+                type: 'fill-in',
+                text: "해수 속 용존 이산화탄소는 표층에서 가장 농도가 낮은데, 주된 이유는 무엇인가?",
+                answer: "광합성에 소모되기 때문",
+                options: ["수온이 높아서", "광합성에 소모되기 때문", "호흡으로 방출되기 때문", "대기로 방출되기 때문"],
+                explanation: "표층에서는 식물성 플랑크톤이 광합성을 활발하게 하면서 이산화탄소를 소모하기 때문에 용존 이산화탄소량이 가장 적게 나타납니다. "
+            },
+            {
+                id: 22,
+                type: 'fill-in',
+                text: "기체의 용해도는 수온이 ( )수록, 수압이 ( )수록 증가한다.",
+                answer: "낮을; 높을",
+                options: ["높을; 낮을", "낮을; 높을", "높을; 높을", "낮을; 낮을"],
+                explanation: "기체는 차가운 물에 더 잘 녹으므로 수온이 낮을수록 용해도가 증가하며, 누르는 압력이 강할수록 더 잘 녹으므로 수압이 높을수록 용해도가 증가합니다. "
+            },
+            {
+                id: 23,
+                type: 'fill-in',
+                text: "수심 약 1000m 부근에서 용존 산소량이 최소가 되는 이유는 무엇인가?",
+                answer: "해양 생물의 호흡",
+                options: ["광합성 중단", "수온 급상승", "해양 생물의 호흡", "대기와의 차단"],
+                explanation: "표층에서 공급된 산소가 이 수심까지 도달하는 동안, 햇빛이 닿지 않아 광합성은 일어나지 않고 수많은 해양 생물들이 호흡으로 산소를 소비하기 때문에 용존 산소량이 최소가 됩니다. "
+            },
+            {
+                id: 24,
+                type: 'ox',
+                text: "심해층으로 갈수록 용존 산소량이 다시 증가하는 이유는, 산소가 풍부한 극지방의 차가운 해수가 침강하여 심해로 공급되기 때문이다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 극지방의 차갑고 산소가 풍부한 표층수가 밀도가 커져 가라앉은 뒤 심해 전체를 순환하면서 심층에 산소를 공급해주는 역할을 합니다. "
+            },
+            {
+                id: 25,
+                type: 'fill-in',
+                text: "해수 중에 더 많은 양이 녹아 있는 기체는 무엇인가?",
+                answer: "이산화탄소",
+                options: ["산소", "이산화탄소", "질소", "아르곤"],
+                explanation: "이산화탄소는 산소보다 물에 대한 용해도가 훨씬 크기 때문에, 전체적으로 용존 이산화탄소의 농도가 용존 산소의 농도보다 높게 나타납니다. "
+            },
+            {
+                id: 26,
+                type: 'fill-in',
+                text: "염분을 측정할 때, 현재는 ( )가 염분과 일정한 관계가 있다는 것을 이용하여 측정한다.",
+                answer: "전기 전도도",
+                options: ["온도", "밀도", "전기 전도도", "투명도"],
+                explanation: "해수에 녹아있는 염류는 이온 상태로 존재하여 전기를 통하게 합니다. 염분이 높을수록 전기 전도도가 높아지는 일정한 관계가 있어, 이를 이용해 염분을 정밀하게 측정합니다. "
+            },
+            {
+                id: 27,
+                type: 'ox',
+                text: "여름철은 겨울철보다 바람이 강해 혼합층이 더 두껍게 발달한다.",
+                answer: "X",
+                options: ["O", "X"],
+                explanation: "아니다. 일반적으로 겨울철이 여름철보다 바람이 강하게 불기 때문에, 해수의 혼합이 더 활발하여 혼합층이 더 두껍게 발달합니다. "
+            },
+            {
+                id: 28,
+                type: 'fill-in',
+                text: "여름철에 수온 약층이 겨울철보다 더 뚜렷하게 발달하는 이유는?",
+                answer: "표층 수온이 높아 수온 차가 크기 때문",
+                options: ["바람이 강해서", "염분이 높아서", "표층 수온이 높아 수온 차가 크기 때문", "심층 수온이 낮아져서"],
+                explanation: "여름철에는 강한 태양 복사 에너지로 인해 표층 수온이 매우 높아져, 차가운 심층과의 수온 차이가 커지므로 수온 약층이 겨울철보다 훨씬 뚜렷하게 나타납니다. "
+            },
+            {
+                id: 29,
+                type: 'ox',
+                text: "우리나라 황해는 동해보다 수심이 얕고 대륙의 영향을 많이 받아 수온과 염분의 연교차가 더 크다.",
+                answer: "O",
+                options: ["O", "X"],
+                explanation: "맞습니다. 황해는 수심이 얕아 물의 양이 적고 대륙으로 둘러싸여 있어, 외부의 영향에 따라 수온과 염분이 동해보다 더 쉽게, 더 크게 변하는 특징이 있습니다. "
+            },
+            {
+                id: 30,
+                type: 'fill-in',
+                text: "심해층의 수온은 위도나 계절에 관계없이 약 ( ) 이하로 매우 낮고 일정하게 유지된다.",
+                answer: "4℃",
+                options: ["10℃", "4℃", "0℃", "-2℃"],
+                explanation: "심해층은 태양 에너지가 도달하지 못하고 외부와 거의 차단되어 있어, 위도나 계절의 영향을 받지 않고 연중 수온이 4℃ 이하로 매우 차갑고 일정하게 유지됩니다. "
+            }
+        ];
+
+        // ------------------ 명언 목록 ------------------
+        const motivationalQuotes = [
+            "오늘의 노력이 내일의 너를 만든다.", "포기하지 않는 한, 실패는 없다.", "가장 큰 위험은 아무 위험도 감수하지 않는 것이다.",
+            "배움은 의무도, 생존도 아니다. 그것은 우리의 가장 큰 특권이다.", "성공은 최종 목적지가 아니며, 실패는 치명적이지 않다. 중요한 것은 계속 나아가는 용기다.",
+            "작은 성공들이 모여 큰 성공을 이룬다.", "어제보다 나은 오늘, 오늘보다 나은 내일을 만들자.",
+            "가장 큰 영광은 한 번도 실패하지 않음이 아니라 실패할 때마다 다시 일어서는 데에 있다.", "천리길도 한 걸음부터.", "노력은 결코 배신하지 않는다."
+        ];
+
+        // ------------------ DOM 요소 ------------------
+        const quizElement = document.getElementById('quiz');
+        const paginationControlsElement = document.getElementById('pagination-controls');
+        const submitPageButton = document.getElementById('submit-page-btn');
+        const scoreSectionElement = document.getElementById('score-section');
+        const currentPageScoreTextElement = document.getElementById('current-page-score-text');
+        const totalScoreTextElement = document.getElementById('total-score-text');
+        const pageInfoElement = document.getElementById('page-info');
+        const quizMainTitleDisplayElement = document.getElementById('quiz-main-title-in-score');
+        const motivationalQuoteElement = document.getElementById('motivational-quote');
+        
+        const welcomePopup = document.getElementById('welcome-popup');
+        const popupPasswordInput = document.getElementById('popup-password');
+        const popupConfirmButton = document.getElementById('popup-confirm');
+        const popupErrorMessage = document.getElementById('popup-error');
+
+        // ------------------ 퀴즈 설정 ------------------
+        const correctPassword = "chan"; // 비밀번호 설정
+        const questionsPerPage = 5; // 페이지 당 문제 수
+        let currentPage = 0;
+        let pageScores = [];
+        let pageAttempted = [];
+
+        // ------------------ 함수 ------------------
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function initializeQuizData() {
+            questions.forEach(q => {
+                q.userAnswer = null;
+                q.isCorrect = null;
+                q.attemptedThisSession = false;
+                if (q.options) {
+                   shuffleArray(q.options);
+                }
+            });
+            const numPages = Math.ceil(questions.length / questionsPerPage);
+            pageAttempted = new Array(numPages).fill(false);
+            pageScores = new Array(numPages).fill(0);
+        }
+
+        function renderQuestionsForPage(page) {
+            quizElement.innerHTML = '';
+            currentPage = page;
+
+            const start = page * questionsPerPage;
+            const end = Math.min(start + questionsPerPage, questions.length);
+            const questionsOnPage = questions.slice(start, end);
+
+            pageInfoElement.textContent = `총 ${questions.length}문제 중 ${start + 1} - ${end}번 문제`;
+
+            questionsOnPage.forEach((q, indexOnPage) => {
+                const questionCard = document.createElement('div');
+                questionCard.classList.add('question-card');
+                questionCard.id = `question-${q.id}`;
+
+                const questionText = document.createElement('p');
+                questionText.classList.add('question-text');
+                questionText.innerHTML = `${q.id}. ${q.text.replace(/(\(\s*\))/g, '<span class="blank-emphasis">( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</span>')}`;
+                questionCard.appendChild(questionText);
+
+                const optionsContainer = document.createElement('div');
+                optionsContainer.classList.add('options');
+
+                q.options.forEach((option, index) => {
+                    const optionId = `q${q.id}-option-${index}`;
+                    
+                    const radioInput = document.createElement('input');
+                    radioInput.type = 'radio';
+                    radioInput.id = optionId;
+                    radioInput.name = `question-${q.id}`;
+                    radioInput.value = option;
+                    radioInput.classList.add('option-input', 'hidden');
+                    if (q.userAnswer === option) radioInput.checked = true;
+                    if (pageAttempted[currentPage]) radioInput.disabled = true;
+
+                    const optionLabel = document.createElement('label');
+                    optionLabel.htmlFor = optionId;
+                    optionLabel.textContent = option;
+                    optionLabel.classList.add('option-label');
+                    if (pageAttempted[currentPage]) optionLabel.classList.add('opacity-70', 'cursor-not-allowed');
+
+                    optionsContainer.appendChild(radioInput);
+                    optionsContainer.appendChild(optionLabel);
+                });
+                questionCard.appendChild(optionsContainer);
+
+                const feedbackElement = document.createElement('div');
+                feedbackElement.classList.add('feedback');
+                feedbackElement.style.display = 'none';
+                questionCard.appendChild(feedbackElement);
+                
+                if (pageAttempted[currentPage] && q.attemptedThisSession) {
+                    showFeedbackForQuestion(q, questionCard);
+                }
+                quizElement.appendChild(questionCard);
+            });
+
+            const numPages = Math.ceil(questions.length / questionsPerPage);
+            if (numPages > 1) {
+                paginationControlsElement.style.display = 'flex';
+                renderPaginationControls();
+            } else {
+                paginationControlsElement.style.display = 'none';
+            }
+
+            submitPageButton.disabled = pageAttempted[currentPage];
+            if (pageAttempted[currentPage]) {
+                submitPageButton.textContent = '채점 완료';
+                scoreSectionElement.style.display = 'block';
+                updateScoreDisplay();
+                showMotivationalQuote();
+            } else {
+                submitPageButton.textContent = '이번 페이지 채점하기';
+                motivationalQuoteElement.style.display = 'none';
+                if (questionsOnPage.length > 0) {
+                    scoreSectionElement.style.display = 'none';
+                }
+            }
+        }
+        
+        function showFeedbackForQuestion(question, questionCard) {
+            const feedbackElement = questionCard.querySelector('.feedback');
+            if (!feedbackElement) return;
+
+            feedbackElement.innerHTML = '';
+            
+            if (question.isCorrect) {
+                feedbackElement.innerHTML = '<strong class="font-semibold">정답입니다!</strong> 🎉';
+                feedbackElement.className = 'feedback correct';
+            } else {
+                feedbackElement.innerHTML = `<strong class="font-semibold">오답입니다.</strong> 정답은 "<span class="font-bold text-red-700">${question.answer}</span>"입니다.`;
+                feedbackElement.className = 'feedback incorrect';
+            }
+
+            const explanationElement = document.createElement('p');
+            explanationElement.classList.add('explanation');
+            explanationElement.innerHTML = `<strong class="font-semibold">해설:</strong> ${question.explanation}`;
+            feedbackElement.appendChild(explanationElement);
+            feedbackElement.style.display = 'block';
+        }
+
+        function renderPaginationControls() {
+            paginationControlsElement.innerHTML = '';
+            const numPages = Math.ceil(questions.length / questionsPerPage);
+
+            const prevButton = document.createElement('button');
+            prevButton.textContent = '이전';
+            prevButton.disabled = currentPage === 0;
+            prevButton.onclick = () => renderQuestionsForPage(currentPage - 1);
+            paginationControlsElement.appendChild(prevButton);
+
+            for (let i = 0; i < numPages; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i + 1;
+                pageButton.classList.add('page-number');
+                if (i === currentPage) {
+                    pageButton.classList.add('current');
+                }
+                pageButton.onclick = () => renderQuestionsForPage(i);
+                paginationControlsElement.appendChild(pageButton);
+            }
+
+            const nextButton = document.createElement('button');
+            nextButton.textContent = '다음';
+            nextButton.disabled = currentPage === numPages - 1;
+            nextButton.onclick = () => renderQuestionsForPage(currentPage + 1);
+            paginationControlsElement.appendChild(nextButton);
+        }
+
+        function showMotivationalQuote() {
+            const randomIndex = Math.floor(Math.random() * motivationalQuotes.length);
+            motivationalQuoteElement.textContent = motivationalQuotes[randomIndex];
+            motivationalQuoteElement.style.display = 'block';
+        }
+
+        function updateScoreDisplay() {
+            const questionsOnThisPageCount = Math.min(questionsPerPage, questions.length - (currentPage * questionsPerPage));
+            currentPageScoreTextElement.textContent = `이번 페이지 점수: ${pageScores[currentPage]} / ${questionsOnThisPageCount}`;
+            
+            let currentTotalScore = 0;
+            let currentTotalAttemptedQuestions = 0;
+            for(let i=0; i < pageAttempted.length; i++){
+                if(pageAttempted[i]){
+                    const start = i * questionsPerPage;
+                    const end = Math.min(start + questionsPerPage, questions.length);
+                    currentTotalAttemptedQuestions += (end-start);
+                    currentTotalScore += pageScores[i];
+                }
+            }
+
+            const quizTitleElement = document.querySelector('h1');
+            quizMainTitleDisplayElement.textContent = quizTitleElement.textContent;
+
+            if (currentTotalAttemptedQuestions > 0) {
+                totalScoreTextElement.style.display = 'block';
+                totalScoreTextElement.textContent = `총 누적 점수: ${currentTotalScore} / ${currentTotalAttemptedQuestions}`;
+            } else {
+                totalScoreTextElement.style.display = 'none';
+            }
+        }
+        
+        // ------------------ 이벤트 리스너 ------------------
+
+        submitPageButton.addEventListener('click', () => {
+            if (pageAttempted[currentPage]) return;
+
+            let scoreForThisPage = 0;
+            
+            const start = currentPage * questionsPerPage;
+            const end = Math.min(start + questionsPerPage, questions.length);
+            const questionsOnPage = questions.slice(start, end);
+
+            questionsOnPage.forEach((q, indexOnPage) => {
+                const questionCard = quizElement.children[indexOnPage];
+                const selectedOptionInput = questionCard.querySelector(`input[name="question-${q.id}"]:checked`);
+                
+                q.attemptedThisSession = true;
+
+                if (selectedOptionInput) {
+                    q.userAnswer = selectedOptionInput.value;
+                    q.isCorrect = (q.userAnswer === q.answer);
+                    
+                    if (q.isCorrect) {
+                        scoreForThisPage++;
+                    }
+                    showFeedbackForQuestion(q, questionCard);
+
+                    const radioInputs = questionCard.querySelectorAll('input[type="radio"]');
+                    radioInputs.forEach(input => input.disabled = true);
+                } else {
+                    const feedbackElement = questionCard.querySelector('.feedback');
+                    feedbackElement.textContent = '답을 선택하지 않았습니다.';
+                    feedbackElement.className = 'feedback incorrect';
+                    feedbackElement.style.display = 'block';
+                    q.isCorrect = false;
+                }
+            });
+            
+            pageScores[currentPage] = scoreForThisPage;
+            pageAttempted[currentPage] = true;
+            submitPageButton.disabled = true;
+            submitPageButton.textContent = '채점 완료';
+            
+            scoreSectionElement.style.display = 'block';
+            updateScoreDisplay();
+            showMotivationalQuote();
+
+            const quizContainerElement = document.querySelector('.quiz-container');
+            if (quizContainerElement) {
+                quizContainerElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+
+        // ------------------ 팝업 및 초기화 ------------------
+        
+        window.onload = () => {
+            if (welcomePopup) {
+                const popupSessionKey = 'seawaterQuizChanTPassword'; 
+                const popupShownThisSession = sessionStorage.getItem(popupSessionKey);
+                if (!popupShownThisSession) {
+                    welcomePopup.classList.add('show');
+                } else {
+                    initializeQuizData();
+                    renderQuestionsForPage(0);
+                }
+            } else {
+                initializeQuizData();
+                renderQuestionsForPage(0);
+            }
+        };
+
+        if (popupConfirmButton) {
+            popupConfirmButton.addEventListener('click', () => {
+                if (popupPasswordInput.value === correctPassword) {
+                    if (welcomePopup) {
+                        welcomePopup.classList.remove('show');
+                    }
+                    const popupSessionKey = 'seawaterQuizChanTPassword';
+                    sessionStorage.setItem(popupSessionKey, 'true');
+                    initializeQuizData();
+                    renderQuestionsForPage(0);
+                } else {
+                    if (popupErrorMessage) {
+                        popupErrorMessage.textContent = "비밀번호가 틀렸습니다. 다시 시도해주세요.";
+                    }
+                    popupPasswordInput.value = '';
+                    popupPasswordInput.focus();
+                }
+            });
+        }
+        
+        if (popupPasswordInput) {
+            popupPasswordInput.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    popupConfirmButton.click();
+                }
+            });
+        }
+
+    </script>
+</body>
+</html>
