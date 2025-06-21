@@ -6,6 +6,7 @@
     <title>찬T의 별의 물리량 퀴즈</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
         body {
             font-family: 'Noto Sans KR', sans-serif;
@@ -233,15 +234,17 @@
             {
                 id: 1,
                 type: 'fill-in',
-                text: "빈의 변위 법칙에 따르면, 별의 표면 온도가 높을수록 최대 에너지를 방출하는 파장($$\\lambda_{max}$$)은 ( ).",
+                // [수정됨] 2. 빈칸 형식을 [BLANK]로 변경
+                text: "빈의 변위 법칙에 따르면, 별의 표면 온도가 높을수록 최대 에너지를 방출하는 파장($$\\lambda_{max}$$)은 [BLANK].",
                 answer: "짧아진다",
                 options: ["길어진다", "짧아진다", "변하지 않는다", "무작위로 변한다"],
                 explanation: "빈의 변위 법칙($$\\lambda_{max} = a/T$$)은 표면 온도(T)와 최대 에너지를 방출하는 파장($$\\lambda_{max}$$)이 반비례 관계에 있음을 의미합니다. 즉, 뜨거운 별일수록 더 짧은 파장의 빛(푸른색)을 강하게 방출합니다."
             },
+            // 이하 나머지 29개 문제는 동일합니다.
             {
                 id: 2,
                 type: 'fill-in',
-                text: "별의 표면 온도가 높은 푸른색 별일수록 색지수(B-V) 값은 ( ).",
+                text: "별의 표면 온도가 높은 푸른색 별일수록 색지수(B-V) 값은 [BLANK].",
                 answer: "작다 (음의 값)",
                 options: ["크다 (양의 값)", "작다 (음의 값)", "0에 가깝다", "항상 1이다"],
                 explanation: "색지수는 B등급(파란색 밝기)에서 V등급(노란색 밝기)을 뺀 값입니다. 푸른 별은 B필터로 들어오는 빛이 더 많아 B등급이 작으므로, B-V 값은 작거나 음수가 됩니다."
@@ -249,7 +252,7 @@
             {
                 id: 3,
                 type: 'fill-in',
-                text: "고온의 광원에서 나온 빛이 저온의 기체를 통과할 때 나타나는 스펙트럼의 종류는 ( )이다.",
+                text: "고온의 광원에서 나온 빛이 저온의 기체를 통과할 때 나타나는 스펙트럼의 종류는 [BLANK]이다.",
                 answer: "흡수 스펙트럼",
                 options: ["연속 스펙트럼", "방출 스펙트럼", "흡수 스펙트럼", "감마선 스펙트럼"],
                 explanation: "별빛(고온의 광원)이 별의 대기(저온의 기체)를 통과하면서 대기 성분에 따라 특정 파장의 빛이 흡수되어 검은 선으로 나타나는 흡수 스펙트럼이 관측됩니다."
@@ -265,7 +268,7 @@
             {
                 id: 5,
                 type: 'fill-in',
-                text: "별의 분광형 O-B-A-F-G-K-M 순서에서, O형 쪽으로 갈수록 표면 온도는 ( ).",
+                text: "별의 분광형 O-B-A-F-G-K-M 순서에서, O형 쪽으로 갈수록 표면 온도는 [BLANK].",
                 answer: "높아진다",
                 options: ["낮아진다", "높아진다", "일정하다", "주기적으로 변한다"],
                 explanation: "분광형은 표면 온도가 높은 순서대로 O, B, A, F, G, K, M으로 분류됩니다. O형이 가장 뜨거운 파란색 별, M형이 가장 차가운 붉은색 별입니다."
@@ -273,7 +276,7 @@
             {
                 id: 6,
                 type: 'fill-in',
-                text: "표면 온도가 약 10,000K인 A형 별의 스펙트럼에서 가장 강하게 나타나는 흡수선은 ( ) 흡수선이다.",
+                text: "표면 온도가 약 10,000K인 A형 별의 스펙트럼에서 가장 강하게 나타나는 흡수선은 [BLANK] 흡수선이다.",
                 answer: "수소(H)",
                 options: ["헬륨(He)", "칼슘(Ca)", "수소(H)", "산화타이타늄(TiO)"],
                 explanation: "수소 원자는 약 10,000K에서 전자가 들뜨기 가장 좋은 조건을 갖추므로, A형 별에서 가장 강한 수소(H I) 흡수선이 관측됩니다."
@@ -289,7 +292,7 @@
             {
                 id: 8,
                 type: 'fill-in',
-                text: "태양의 분광형은 ( )이다.",
+                text: "태양의 분광형은 [BLANK]이다.",
                 answer: "G2",
                 options: ["A0", "F5", "G2", "K1"],
                 explanation: "태양은 표면 온도가 약 5,800K인 노란색 별으로, 분광형 분류상 G2에 해당합니다."
@@ -297,7 +300,7 @@
             {
                 id: 9,
                 type: 'fill-in',
-                text: "별의 실제 밝기를 나타내는 물리량으로, 별이 단위 시간 동안 방출하는 총 에너지양은 ( )이다.",
+                text: "별의 실제 밝기를 나타내는 물리량으로, 별이 단위 시간 동안 방출하는 총 에너지양은 [BLANK]이다.",
                 answer: "광도",
                 options: ["겉보기 등급", "절대 등급", "광도", "표면 온도"],
                 explanation: "광도는 별의 고유한 밝기를 나타내는 총 에너지 방출량입니다. 절대 등급은 이 광도를 등급으로 표현한 것입니다."
@@ -321,7 +324,7 @@
             {
                 id: 12,
                 type: 'fill-in',
-                text: "슈테판-볼츠만 법칙에 따르면, 별이 단위 면적당 방출하는 에너지양은 표면 온도(T)의 ( )에 비례한다.",
+                text: "슈테판-볼츠만 법칙에 따르면, 별이 단위 면적당 방출하는 에너지양은 표면 온도(T)의 [BLANK]에 비례한다.",
                 answer: "네제곱",
                 options: ["제곱", "세제곱", "네제곱", "제곱근"],
                 explanation: "슈테판-볼츠만 법칙($$E = \\sigma T^4$$)에 따라, 온도가 2배 높아지면 단위 면적당 방출 에너지는 16배($$2^4$$) 증가합니다. 온도의 영향이 매우 큽니다."
@@ -329,7 +332,7 @@
             {
                 id: 13,
                 type: 'fill-in',
-                text: "별의 광도(L)는 별의 반지름(R)의 ( )에 비례하고, 표면 온도(T)의 네제곱에 비례한다.",
+                text: "별의 광도(L)는 별의 반지름(R)의 [BLANK]에 비례하고, 표면 온도(T)의 네제곱에 비례한다.",
                 answer: "제곱",
                 options: ["제곱", "세제곱", "네제곱", "제곱근"],
                 explanation: "별의 총 밝기(광도)는 단위 면적당 밝기($$\\sigma T^4$$)와 별의 전체 표면적($$4\\pi R^2$$)의 곱으로 결정됩니다. 따라서 $$L = 4\\pi R^2 \\sigma T^4$$ 입니다."
@@ -345,7 +348,7 @@
             {
                 id: 15,
                 type: 'fill-in',
-                text: "별의 ( )와/과 ( )를 알면, 슈테판-볼츠만 법칙을 이용하여 별의 반지름을 계산할 수 있다.",
+                text: "별의 [BLANK]와/과 [BLANK]를 알면, 슈테판-볼츠만 법칙을 이용하여 별의 반지름을 계산할 수 있다.",
                 answer: "광도; 표면 온도",
                 options: ["거리; 겉보기 등급", "질량; 나이", "광도; 표면 온도", "색지수; 분광형"],
                 explanation: "광도 공식($$L = 4\\pi R^2 \\sigma T^4$$)을 반지름(R)에 대해 정리하면, 별의 광도(L)와 표면 온도(T)를 통해 반지름을 구할 수 있습니다."
@@ -353,7 +356,7 @@
             {
                 id: 16,
                 type: 'fill-in',
-                text: "별의 겉보기 밝기는 거리(r)의 ( )에 반비례한다.",
+                text: "별의 겉보기 밝기는 거리(r)의 [BLANK]에 반비례한다.",
                 answer: "제곱",
                 options: ["1/2제곱", "세제곱", "제곱", "네제곱"],
                 explanation: "별에서 방출된 빛은 사방으로 퍼져나가므로, 거리가 2배 멀어지면 빛이 퍼지는 면적은 4배($$2^2$$)가 됩니다. 따라서 단위 면적당 도달하는 빛의 양, 즉 겉보기 밝기는 1/4로 줄어듭니다."
@@ -433,7 +436,7 @@
             {
                 id: 26,
                 type: 'fill-in',
-                text: "중성 원자는 원소 기호 뒤에 로마 숫자 ( )를 붙여 표현한다. (예: HI, HeI)",
+                text: "중성 원자는 원소 기호 뒤에 로마 숫자 [BLANK]를 붙여 표현한다. (예: HI, HeI)",
                 answer: "I",
                 options: ["I", "II", "III", "IV"],
                 explanation: "분광학에서 중성 상태의 원자는 로마 숫자 I으로, 전자를 하나 잃은 1가 이온은 II로, 두 개 잃은 2가 이온은 III으로 표기합니다."
@@ -449,7 +452,7 @@
             {
                 id: 28,
                 type: 'fill-in',
-                text: "U, B, V 필터 중 가장 짧은 파장의 빛을 통과시키는 필터는 ( ) 필터이다.",
+                text: "U, B, V 필터 중 가장 짧은 파장의 빛을 통과시키는 필터는 [BLANK] 필터이다.",
                 answer: "U",
                 options: ["U", "B", "V", "모두 같다"],
                 explanation: "U 필터는 자외선(Ultraviolet) 영역, B 필터는 파란색(Blue) 영역, V 필터는 노란색(Visual) 영역의 빛을 주로 통과시킵니다. 이 중 자외선 영역의 파장이 가장 짧습니다."
@@ -457,7 +460,7 @@
             {
                 id: 29,
                 type: 'fill-in',
-                text: "어떤 별의 겉보기 등급이 3등급이고 절대 등급이 8등급이라면, 이 별은 10pc보다 ( ) 거리에 있다.",
+                text: "어떤 별의 겉보기 등급이 3등급이고 절대 등급이 8등급이라면, 이 별은 10pc보다 [BLANK] 거리에 있다.",
                 answer: "가까운",
                 options: ["먼", "가까운", "정확히 10pc", "알 수 없는"],
                 explanation: "절대 등급(8등급)보다 겉보기 등급(3등급)이 더 작다는 것은, 실제 밝기보다 겉으로 보기에 더 밝다는 의미입니다. 따라서 이 별은 기준 거리인 10pc보다 우리에게 더 가깝게 위치해 있습니다."
@@ -543,7 +546,11 @@
 
                 const questionText = document.createElement('p');
                 questionText.classList.add('question-text');
-                questionText.innerHTML = `${q.id}. ${q.text.replace(/(\(\s*\))/g, '<span class="blank-emphasis">( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</span>')}`;
+                
+                // [수정됨] 3. 빈칸 처리 및 수학기호 렌더링 로직
+                let processedText = q.text.replace(/\[BLANK\]/g, '<span class="blank-emphasis">( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</span>');
+                questionText.innerHTML = `${q.id}. ${processedText}`;
+                
                 questionCard.appendChild(questionText);
 
                 const optionsContainer = document.createElement('div');
@@ -582,6 +589,11 @@
                 }
                 quizElement.appendChild(questionCard);
             });
+
+            // [수정됨] 3. MathJax 렌더링 실행
+            if (window.MathJax) {
+                MathJax.typesetPromise([quizElement]).catch((err) => console.log('MathJax typeset failed: ' + err.message));
+            }
 
             const numPages = Math.ceil(questions.length / questionsPerPage);
             if (numPages > 1) {
@@ -625,6 +637,11 @@
             explanationElement.innerHTML = `<strong class="font-semibold">해설:</strong> ${question.explanation}`;
             feedbackElement.appendChild(explanationElement);
             feedbackElement.style.display = 'block';
+
+            // [수정됨] 3. 피드백 영역의 수학기호 렌더링 실행
+            if (window.MathJax) {
+                MathJax.typesetPromise([feedbackElement]).catch((err) => console.log('MathJax typeset failed: ' + err.message));
+            }
         }
 
         function renderPaginationControls() {
